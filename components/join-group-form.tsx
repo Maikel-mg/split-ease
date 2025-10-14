@@ -2,13 +2,14 @@
 
 import type React from "react"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { getGroupService } from "@/lib/services"
+import { joinGroupWithCode } from "@/app/actions/group-actions"
 import type { Group } from "@/core/entities/Group"
+import { createClient } from "@/lib/supabase/client"
 
 interface JoinGroupFormProps {
   onGroupJoined: (group: Group) => void
@@ -16,9 +17,20 @@ interface JoinGroupFormProps {
 
 export function JoinGroupForm({ onGroupJoined }: JoinGroupFormProps) {
   const [code, setCode] = useState("")
-  const [memberName, setMemberName] = useState("")
+  const [userEmail, setUserEmail] = useState("")
+  const [userId, setUserId] = useState("")
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState("")
+
+  useEffect(() => {
+    const supabase = createClient()
+    supabase.auth.getUser().then(({ data: { user } }) => {
+      if (user?.email) {
+        setUserEmail(user.email)
+        setUserId(user.id)
+      }
+    })
+  }, [])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -26,9 +38,16 @@ export function JoinGroupForm({ onGroupJoined }: JoinGroupFormProps) {
     setIsLoading(true)
 
     try {
-      const groupService = getGroupService()
-      const group = await groupService.joinGroup(code, memberName)
-      onGroupJoined(group)
+      const result = await joinGroupWithCode(userId, userEmail, code)
+
+      if (result.success) {
+        const supabase = createClient()
+        const { data: group } = await supabase.from("groups").select("*").eq("id", result.groupId).single()
+
+        if (group) {
+          onGroupJoined(group as Group)
+        }
+      }
     } catch (err) {
       setError(err instanceof Error ? err.message : "Error al unirse al grupo")
     } finally {

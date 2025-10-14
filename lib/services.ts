@@ -6,6 +6,7 @@ import { SupabaseGroupRepository } from "@/data/repositories/SupabaseGroupReposi
 import { SupabaseExpenseRepository } from "@/data/repositories/SupabaseExpenseRepository"
 import { SupabasePaymentRepository } from "@/data/repositories/SupabasePaymentRepository"
 import type { SupabaseClient } from "@supabase/supabase-js"
+import { createClient } from "@/lib/supabase/client"
 
 export function createServices(supabase: SupabaseClient) {
   const groupRepository = new SupabaseGroupRepository(supabase)
@@ -28,8 +29,6 @@ function getClientServices() {
   }
 
   if (!clientServices) {
-    // Dynamically import to avoid build-time issues
-    const { createClient } = require("@/lib/supabase/client")
     const supabase = createClient()
     clientServices = createServices(supabase)
   }

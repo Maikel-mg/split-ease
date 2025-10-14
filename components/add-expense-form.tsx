@@ -67,6 +67,7 @@ export function AddExpenseForm({ group, onExpenseAdded, editExpense, onExpenseUp
       const expenseService = getExpenseService()
 
       if (editExpense) {
+      console.log('UPDATE ', editExpense)
         const expense = await expenseService.updateExpense(
           editExpense.id,
           Number.parseFloat(amount),
@@ -77,6 +78,8 @@ export function AddExpenseForm({ group, onExpenseAdded, editExpense, onExpenseUp
         )
         onExpenseUpdated?.(expense)
       } else {
+      console.log('CREATE ', editExpense)
+
         const expense = await expenseService.createExpense(
           group.id,
           Number.parseFloat(amount),
@@ -96,6 +99,8 @@ export function AddExpenseForm({ group, onExpenseAdded, editExpense, onExpenseUp
       setParticipants([])
       setDate(new Date().toISOString().split("T")[0])
     } catch (err) {
+      console.log('ERRROR ', err)
+
       setError(err instanceof Error ? err.message : "Error al crear el gasto")
     } finally {
       setIsLoading(false)

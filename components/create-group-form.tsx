@@ -8,7 +8,8 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { X } from "lucide-react"
-import { getGroupService } from "@/lib/services"
+import { createGroupWithMembers } from "@/app/actions/group-actions"
+import { createClient } from "@/lib/supabase/client"
 import type { Group } from "@/core/entities/Group"
 
 interface CreateGroupFormProps {
@@ -41,17 +42,37 @@ export function CreateGroupForm({ onGroupCreated }: CreateGroupFormProps) {
     setIsLoading(true)
 
     try {
-      const groupService = getGroupService()
+      const supabase = createClient()
+      const {
+        data: { user },
+      } = await supabase.auth.getUser()
+
+      if (!user) {
+        throw new Error("Usuario no autenticado")
+      }
+
       const validMembers = members.filter((m) => m.trim() !== "")
 
       if (validMembers.length === 0) {
         throw new Error("Debe agregar al menos un miembro")
       }
 
-      const group = await groupService.createGroup(groupName, validMembers)
-      onGroupCreated(group)
+      console.log("[v0] Creating group with:", { groupName, validMembers })
+
+      const result = await createGroupWithMembers(user.id, groupName, validMembers)
+
+      if (result.success) {
+        console.log("[v0] Group created successfully:", result.groupId)
+        const { data: group } = await supabase.from("groups").select("*").eq("id", result.groupId).single()
+
+        if (group) {
+          onGroupCreated(group as Group)
+        }
+      }
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Error al crear el grupo")
+      console.error("[v0] Error in create group form:", err)
+      const errorMessage = err instanceof Error ? err.message : "Error al crear el grupo"
+      setError(errorMessage)
     } finally {
       setIsLoading(false)
     }

@@ -17,7 +17,7 @@ export class SupabaseExpenseRepository implements ExpenseRepository {
         group_id: expense.groupId,
         amount: expense.amount,
         description: expense.description,
-        payer: expense.payer,
+        payer: expense.paidBy, // Changed from expense.payer to expense.paidBy
         participants: expense.participants,
         date: expense.date.toISOString(),
         user_id: user.id,
@@ -32,7 +32,7 @@ export class SupabaseExpenseRepository implements ExpenseRepository {
       groupId: data.group_id,
       amount: data.amount,
       description: data.description,
-      payer: data.payer,
+      paidBy: data.payer, // Map payer column to paidBy field
       participants: data.participants,
       date: new Date(data.date),
       createdAt: new Date(data.created_at),
@@ -53,7 +53,7 @@ export class SupabaseExpenseRepository implements ExpenseRepository {
       groupId: row.group_id,
       amount: row.amount,
       description: row.description,
-      payer: row.payer,
+      paidBy: row.payer, // Map payer column to paidBy field
       participants: row.participants,
       date: new Date(row.date),
       createdAt: new Date(row.created_at),
@@ -70,7 +70,7 @@ export class SupabaseExpenseRepository implements ExpenseRepository {
       groupId: data.group_id,
       amount: data.amount,
       description: data.description,
-      payer: data.payer,
+      paidBy: data.payer, // Map payer column to paidBy field
       participants: data.participants,
       date: new Date(data.date),
       createdAt: new Date(data.created_at),
@@ -87,7 +87,7 @@ export class SupabaseExpenseRepository implements ExpenseRepository {
     const updateData: any = {}
     if (updates.amount !== undefined) updateData.amount = updates.amount
     if (updates.description !== undefined) updateData.description = updates.description
-    if (updates.payer !== undefined) updateData.payer = updates.payer
+    if (updates.paidBy !== undefined) updateData.payer = updates.paidBy // Map paidBy field to payer column
     if (updates.participants !== undefined) updateData.participants = updates.participants
     if (updates.date !== undefined) updateData.date = updates.date.toISOString()
 
@@ -100,7 +100,7 @@ export class SupabaseExpenseRepository implements ExpenseRepository {
       groupId: data.group_id,
       amount: data.amount,
       description: data.description,
-      payer: data.payer,
+      paidBy: data.payer, // Map payer column to paidBy field
       participants: data.participants,
       date: new Date(data.date),
       createdAt: new Date(data.created_at),
