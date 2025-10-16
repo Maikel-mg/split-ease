@@ -74,7 +74,7 @@ export async function createGroupWithMembers(userId: string, groupName: string, 
   }
 }
 
-export async function joinGroupWithCode(userId: string, userEmail: string, groupCode: string) {
+export async function joinGroupWithCode(userId: string, displayName: string, groupCode: string) {
   try {
     const supabase = createServiceRoleClient()
 
@@ -96,11 +96,11 @@ export async function joinGroupWithCode(userId: string, userEmail: string, group
       return { success: true, groupId: group.id, alreadyMember: true }
     }
 
-    // Add the user as a member
+    // Add the user as a member with their display name
     const { error: memberError } = await supabase.from("group_members").insert({
       group_id: group.id,
       user_id: userId,
-      member_name: userEmail,
+      member_name: displayName, // Use display name instead of email
     })
 
     if (memberError) {

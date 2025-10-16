@@ -3,6 +3,7 @@
 import type React from "react"
 
 import { createClient } from "@/lib/supabase/client"
+import { createUserProfile } from "@/app/actions/profile-actions"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
@@ -13,6 +14,7 @@ import { useState } from "react"
 import { Users } from "lucide-react"
 
 export default function SignUpPage() {
+  const [displayName, setDisplayName] = useState("")
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
   const [repeatPassword, setRepeatPassword] = useState("")
@@ -32,8 +34,14 @@ export default function SignUpPage() {
       return
     }
 
+    if (!displayName || displayName.trim().length === 0) {
+      setError("El nombre es requerido")
+      setIsLoading(false)
+      return
+    }
+
     try {
-      const { error } = await supabase.auth.signUp({
+      const { data, error } = await supabase.auth.signUp({
         email,
         password,
         options: {
@@ -41,6 +49,14 @@ export default function SignUpPage() {
         },
       })
       if (error) throw error
+
+      if (data.user) {
+        const profileResult = await createUserProfile(data.user.id, displayName)
+        if (!profileResult.success) {
+          console.error("[v0] Error creating profile:", profileResult.error)
+        }
+      }
+
       router.push("/auth/sign-up-success")
     } catch (error: unknown) {
       setError(error instanceof Error ? error.message : "Error al crear la cuenta")
@@ -122,6 +138,19 @@ export default function SignUpPage() {
                     <div className="relative flex justify-center text-xs uppercase">
                       <span className="bg-background px-2 text-muted-foreground">O continúa con</span>
                     </div>
+                  </div>
+
+                  <div className="grid gap-2">
+                    <Label htmlFor="displayName">Nombre</Label>
+                    <Input
+                      id="displayName"
+                      type="text"
+                      placeholder="Tu nombre"
+                      required
+                      value={displayName}
+                      onChange={(e) => setDisplayName(e.target.value)}
+                      maxLength={50}
+                    />
                   </div>
 
                   <div className="grid gap-2">

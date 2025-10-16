@@ -3,11 +3,12 @@
 import { useEffect, useState } from "react"
 import { useRouter } from "next/navigation"
 import { createClient } from "@/lib/supabase/client"
+import { getUserProfile } from "@/app/actions/profile-actions"
 import HomePage from "@/components/home-page"
 
 export default function WelcomePage() {
   const router = useRouter()
-  const [userEmail, setUserEmail] = useState<string | null>(null)
+  const [displayName, setDisplayName] = useState<string | null>(null)
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
@@ -22,7 +23,14 @@ export default function WelcomePage() {
         return
       }
 
-      setUserEmail(user.email || null)
+      const profileResult = await getUserProfile(user.id)
+      if (profileResult.success && profileResult.profile) {
+        setDisplayName(profileResult.profile.display_name)
+      } else {
+        // Fallback to email if no profile exists
+        setDisplayName(user.email || null)
+      }
+
       setLoading(false)
     }
 
@@ -37,5 +45,5 @@ export default function WelcomePage() {
     )
   }
 
-  return <HomePage userEmail={userEmail} />
+  return <HomePage displayName={displayName} />
 }

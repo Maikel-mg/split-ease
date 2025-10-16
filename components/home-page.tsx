@@ -10,10 +10,10 @@ import type { Group } from "@/core/entities/Group"
 import { createClient } from "@/lib/supabase/client"
 
 interface HomePageProps {
-  userEmail: string | null
+  displayName: string | null
 }
 
-export default function HomePage({ userEmail }: HomePageProps) {
+export default function HomePage({ displayName }: HomePageProps) {
   const router = useRouter()
   const [view, setView] = useState<"welcome" | "create" | "join">("welcome")
 
@@ -34,9 +34,9 @@ export default function HomePage({ userEmail }: HomePageProps) {
   return (
     <main className="min-h-screen bg-background flex items-center justify-center p-4">
       <div className="w-full max-w-md">
-        {userEmail && (
+        {displayName && (
           <div className="mb-4 flex items-center justify-between text-sm text-muted-foreground">
-            <span>{userEmail}</span>
+            <span>{displayName}</span>
             <Button variant="ghost" size="sm" onClick={handleLogout}>
               <LogOut className="h-4 w-4 mr-2" />
               Salir

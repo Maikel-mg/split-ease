@@ -2,10 +2,12 @@
 
 import { useEffect, useState } from "react"
 import { useRouter } from "next/navigation"
-import { Search, Plus } from "lucide-react"
+import Link from "next/link"
+import { Search, Plus, User } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { getUserGroups } from "@/app/actions/group-actions"
+import { getUserProfile } from "@/app/actions/profile-actions"
 
 interface GroupWithDetails {
   id: string
@@ -26,9 +28,11 @@ export default function MyGroupsPage({ userId }: MyGroupsPageProps) {
   const [filteredGroups, setFilteredGroups] = useState<GroupWithDetails[]>([])
   const [searchQuery, setSearchQuery] = useState("")
   const [loading, setLoading] = useState(true)
+  const [displayName, setDisplayName] = useState<string>("")
 
   useEffect(() => {
     loadGroups()
+    loadProfile()
   }, [userId])
 
   useEffect(() => {
@@ -50,6 +54,17 @@ export default function MyGroupsPage({ userId }: MyGroupsPageProps) {
       console.error("[v0] Error loading groups:", error)
     } finally {
       setLoading(false)
+    }
+  }
+
+  const loadProfile = async () => {
+    try {
+      const result = await getUserProfile(userId)
+      if (result.success && result.profile) {
+        setDisplayName(result.profile.display_name)
+      }
+    } catch (error) {
+      console.error("[v0] Error loading profile:", error)
     }
   }
 
@@ -99,9 +114,18 @@ export default function MyGroupsPage({ userId }: MyGroupsPageProps) {
         <div className="max-w-2xl mx-auto px-4 py-4">
           <div className="flex items-center justify-between mb-4">
             <h1 className="text-2xl font-bold">Mis Grupos</h1>
-            <Button variant="ghost" size="icon" onClick={() => setSearchQuery("")}>
-              <Search className="h-5 w-5" />
-            </Button>
+            <div className="flex items-center gap-2">
+              <Link
+                href="/profile"
+                className="flex items-center gap-2 px-3 py-2 text-sm rounded-md hover:bg-accent transition-colors"
+              >
+                <User className="h-4 w-4" />
+                <span>{displayName || "Perfil"}</span>
+              </Link>
+              <Button variant="ghost" size="icon" onClick={() => setSearchQuery("")}>
+                <Search className="h-5 w-5" />
+              </Button>
+            </div>
           </div>
           <Input
             type="text"

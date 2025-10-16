@@ -8,6 +8,7 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { joinGroupWithCode } from "@/app/actions/group-actions"
+import { getUserProfile } from "@/app/actions/profile-actions"
 import type { Group } from "@/core/entities/Group"
 import { createClient } from "@/lib/supabase/client"
 
@@ -17,19 +18,32 @@ interface JoinGroupFormProps {
 
 export function JoinGroupForm({ onGroupJoined }: JoinGroupFormProps) {
   const [code, setCode] = useState("")
-  const [userEmail, setUserEmail] = useState("")
+  const [displayName, setDisplayName] = useState("")
   const [userId, setUserId] = useState("")
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState("")
 
   useEffect(() => {
-    const supabase = createClient()
-    supabase.auth.getUser().then(({ data: { user } }) => {
-      if (user?.email) {
-        setUserEmail(user.email)
+    const loadUserData = async () => {
+      const supabase = createClient()
+      const {
+        data: { user },
+      } = await supabase.auth.getUser()
+
+      if (user) {
         setUserId(user.id)
+
+        const profileResult = await getUserProfile(user.id)
+        if (profileResult.success && profileResult.profile) {
+          setDisplayName(profileResult.profile.display_name)
+        } else {
+          // Fallback to email if no profile exists
+          setDisplayName(user.email || "")
+        }
       }
-    })
+    }
+
+    loadUserData()
   }, [])
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -38,7 +52,7 @@ export function JoinGroupForm({ onGroupJoined }: JoinGroupFormProps) {
     setIsLoading(true)
 
     try {
-      const result = await joinGroupWithCode(userId, userEmail, code)
+      const result = await joinGroupWithCode(userId, displayName, code)
 
       if (result.success) {
         const supabase = createClient()
