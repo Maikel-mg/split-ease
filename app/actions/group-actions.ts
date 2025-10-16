@@ -89,18 +89,17 @@ export async function joinGroupWithCode(userId: string, displayName: string, gro
       .from("group_members")
       .select("id")
       .eq("group_id", group.id)
-      .eq("user_id", userId)
+      .eq("member_name", displayName)
       .maybeSingle()
 
     if (existingMember) {
       return { success: true, groupId: group.id, alreadyMember: true }
     }
 
-    // Add the user as a member with their display name
     const { error: memberError } = await supabase.from("group_members").insert({
       group_id: group.id,
-      user_id: userId,
-      member_name: displayName, // Use display name instead of email
+      user_id: null,
+      member_name: displayName,
     })
 
     if (memberError) {
