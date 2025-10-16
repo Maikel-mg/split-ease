@@ -4,20 +4,20 @@ import { useState, useEffect } from "react"
 import { useParams, useRouter } from "next/navigation"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Button } from "@/components/ui/button"
-import { ArrowLeft, Share2, Copy, Check } from "lucide-react"
+import { ArrowLeft, Share2 } from "lucide-react"
 import { AddExpenseForm } from "@/components/add-expense-form"
 import { ExpenseList } from "@/components/expense-list"
 import { BalanceSummary } from "@/components/balance-summary"
 import { SimplifiedDebts } from "@/components/simplified-debts"
 import { DebtSettlement } from "@/components/debt-settlement"
 import { GroupInfo } from "@/components/group-info"
+import { ShareGroupDialog } from "@/components/share-group-dialog"
 import { getGroupService, getExpenseService, getBalanceService, getPaymentService } from "@/lib/services"
 import { useUserIdentity } from "@/lib/hooks/use-user-identity"
 import type { Group } from "@/core/entities/Group"
 import type { Expense } from "@/core/entities/Expense"
 import type { Balance, Debt } from "@/core/entities/Balance"
 import type { Payment } from "@/core/entities/Payment"
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 
 export default function GroupPage() {
   const params = useParams()
@@ -32,8 +32,7 @@ export default function GroupPage() {
   const [debts, setDebts] = useState<Debt[]>([])
   const [loading, setLoading] = useState(true)
   const [editingExpense, setEditingExpense] = useState<Expense | undefined>(undefined)
-  const [copiedCode, setCopiedCode] = useState(false)
-  const [copiedUrl, setCopiedUrl] = useState(false)
+  const [shareDialogOpen, setShareDialogOpen] = useState(false)
 
   const loadData = async () => {
     try {
@@ -95,21 +94,6 @@ export default function GroupPage() {
     router.push("/grupos")
   }
 
-  const handleCopyCode = async () => {
-    if (!group) return
-    await navigator.clipboard.writeText(group.code)
-    setCopiedCode(true)
-    setTimeout(() => setCopiedCode(false), 2000)
-  }
-
-  const handleCopyUrl = async () => {
-    if (!group) return
-    const url = `${window.location.origin}/join/${group.code}`
-    await navigator.clipboard.writeText(url)
-    setCopiedUrl(true)
-    setTimeout(() => setCopiedUrl(false), 2000)
-  }
-
   if (loading) {
     return (
       <main className="min-h-screen bg-background p-4 md:p-8">
@@ -134,23 +118,9 @@ export default function GroupPage() {
               Volver
             </Button>
             <h1 className="font-semibold text-lg truncate">{group.name}</h1>
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="ghost" size="sm">
-                  <Share2 className="h-4 w-4" />
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end">
-                <DropdownMenuItem onClick={handleCopyCode}>
-                  {copiedCode ? <Check className="h-4 w-4 mr-2" /> : <Copy className="h-4 w-4 mr-2" />}
-                  {copiedCode ? "Código copiado" : "Copiar código"}
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={handleCopyUrl}>
-                  {copiedUrl ? <Check className="h-4 w-4 mr-2" /> : <Copy className="h-4 w-4 mr-2" />}
-                  {copiedUrl ? "URL copiada" : "Copiar enlace"}
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
+            <Button variant="ghost" size="sm" onClick={() => setShareDialogOpen(true)}>
+              <Share2 className="h-4 w-4" />
+            </Button>
           </div>
         </div>
 
@@ -217,6 +187,12 @@ export default function GroupPage() {
           </Tabs>
         </div>
       </div>
+      <ShareGroupDialog
+        groupName={group.name}
+        groupCode={group.code}
+        open={shareDialogOpen}
+        onOpenChange={setShareDialogOpen}
+      />
     </main>
   )
 }
