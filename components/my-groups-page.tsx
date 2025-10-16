@@ -2,12 +2,10 @@
 
 import { useEffect, useState } from "react"
 import { useRouter } from "next/navigation"
-import Link from "next/link"
-import { Search, Plus, User } from "lucide-react"
+import { Search, Plus } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import { getUserGroups } from "@/app/actions/group-actions"
-import { getUserProfile } from "@/app/actions/profile-actions"
+import { getGroupService, getExpenseService, getBalanceService } from "@/lib/services"
 
 interface GroupWithDetails {
   id: string
@@ -18,22 +16,16 @@ interface GroupWithDetails {
   userBalance: number
 }
 
-interface MyGroupsPageProps {
-  userId: string
-}
-
-export default function MyGroupsPage({ userId }: MyGroupsPageProps) {
+export default function MyGroupsPage() {
   const router = useRouter()
   const [groups, setGroups] = useState<GroupWithDetails[]>([])
   const [filteredGroups, setFilteredGroups] = useState<GroupWithDetails[]>([])
   const [searchQuery, setSearchQuery] = useState("")
   const [loading, setLoading] = useState(true)
-  const [displayName, setDisplayName] = useState<string>("")
 
   useEffect(() => {
     loadGroups()
-    loadProfile()
-  }, [userId])
+  }, [])
 
   useEffect(() => {
     if (searchQuery.trim() === "") {
@@ -47,24 +39,64 @@ export default function MyGroupsPage({ userId }: MyGroupsPageProps) {
   const loadGroups = async () => {
     try {
       setLoading(true)
-      const userGroups = await getUserGroups(userId)
-      setGroups(userGroups)
-      setFilteredGroups(userGroups)
+      const groupService = getGroupService()
+      const expenseService = getExpenseService()
+      const balanceService = getBalanceService()
+
+      const myGroupIdsData = localStorage.getItem("my-group-ids")
+      const myGroupIds: string[] = myGroupIdsData ? JSON.parse(myGroupIdsData) : []
+
+      console.log("[v0] My group IDs:", myGroupIds)
+
+      if (myGroupIds.length === 0) {
+        setGroups([])
+        setFilteredGroups([])
+        setLoading(false)
+        return
+      }
+
+      const groupsWithDetails: GroupWithDetails[] = await Promise.all(
+        myGroupIds.map(async (groupId) => {
+          try {
+            const group = await groupService.getGroup(groupId)
+            if (!group) return null
+
+            const expenses = await expenseService.getExpensesByGroup(group.id)
+            const totalExpenses = expenses.reduce((sum, exp) => sum + exp.amount, 0)
+
+            // Calculate balances for the group
+            const balances = balanceService.calculateBalances(group, expenses, [])
+
+            // Get user's identity for this group
+            const userIdentity = localStorage.getItem(`user-identity-${groupId}`)
+            const userMemberName = userIdentity || ""
+
+            // Find user's balance
+            const userBalance = balances.find((b) => b.member === userMemberName)?.balance || 0
+
+            return {
+              id: group.id,
+              name: group.name,
+              code: group.code,
+              memberCount: group.members?.length || 0,
+              totalExpenses,
+              userBalance,
+            }
+          } catch (error) {
+            console.error(`[v0] Error loading group ${groupId}:`, error)
+            return null
+          }
+        }),
+      )
+
+      const validGroups = groupsWithDetails.filter((g) => g !== null) as GroupWithDetails[]
+
+      setGroups(validGroups)
+      setFilteredGroups(validGroups)
     } catch (error) {
       console.error("[v0] Error loading groups:", error)
     } finally {
       setLoading(false)
-    }
-  }
-
-  const loadProfile = async () => {
-    try {
-      const result = await getUserProfile(userId)
-      if (result.success && result.profile) {
-        setDisplayName(result.profile.display_name)
-      }
-    } catch (error) {
-      console.error("[v0] Error loading profile:", error)
     }
   }
 
@@ -114,18 +146,9 @@ export default function MyGroupsPage({ userId }: MyGroupsPageProps) {
         <div className="max-w-2xl mx-auto px-4 py-4">
           <div className="flex items-center justify-between mb-4">
             <h1 className="text-2xl font-bold">Mis Grupos</h1>
-            <div className="flex items-center gap-2">
-              <Link
-                href="/profile"
-                className="flex items-center gap-2 px-3 py-2 text-sm rounded-md hover:bg-accent transition-colors"
-              >
-                <User className="h-4 w-4" />
-                <span>{displayName || "Perfil"}</span>
-              </Link>
-              <Button variant="ghost" size="icon" onClick={() => setSearchQuery("")}>
-                <Search className="h-5 w-5" />
-              </Button>
-            </div>
+            <Button variant="ghost" size="icon" onClick={() => setSearchQuery("")}>
+              <Search className="h-5 w-5" />
+            </Button>
           </div>
           <Input
             type="text"

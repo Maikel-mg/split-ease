@@ -5,9 +5,8 @@ import { CreateGroupForm } from "@/components/create-group-form"
 import { JoinGroupForm } from "@/components/join-group-form"
 import { Button } from "@/components/ui/button"
 import { useRouter } from "next/navigation"
-import { Users, LogOut } from "lucide-react"
+import { Users } from "lucide-react"
 import type { Group } from "@/core/entities/Group"
-import { createClient } from "@/lib/supabase/client"
 
 interface HomePageProps {
   displayName: string | null
@@ -25,25 +24,9 @@ export default function HomePage({ displayName }: HomePageProps) {
     router.push(`/group/${group.id}`)
   }
 
-  const handleLogout = async () => {
-    const supabase = createClient()
-    await supabase.auth.signOut()
-    router.push("/auth/login")
-  }
-
   return (
     <main className="min-h-screen bg-background flex items-center justify-center p-4">
       <div className="w-full max-w-md">
-        {displayName && (
-          <div className="mb-4 flex items-center justify-between text-sm text-muted-foreground">
-            <span>{displayName}</span>
-            <Button variant="ghost" size="sm" onClick={handleLogout}>
-              <LogOut className="h-4 w-4 mr-2" />
-              Salir
-            </Button>
-          </div>
-        )}
-
         {view === "welcome" && (
           <div className="space-y-8 text-center">
             <div className="flex justify-center">

@@ -1,16 +1,15 @@
 "use client"
 
 import type React from "react"
-
 import { useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { X } from "lucide-react"
-import { createGroupWithMembers } from "@/app/actions/group-actions"
-import { createClient } from "@/lib/supabase/client"
 import type { Group } from "@/core/entities/Group"
+import { getGroupService } from "@/lib/services"
+import { useUserIdentity } from "@/lib/hooks/use-user-identity"
 
 interface CreateGroupFormProps {
   onGroupCreated: (group: Group) => void
@@ -18,9 +17,11 @@ interface CreateGroupFormProps {
 
 export function CreateGroupForm({ onGroupCreated }: CreateGroupFormProps) {
   const [groupName, setGroupName] = useState("")
+  const [creatorName, setCreatorName] = useState("")
   const [members, setMembers] = useState<string[]>([""])
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState("")
+  const { setIdentity } = useUserIdentity(null)
 
   const addMember = () => {
     setMembers([...members, ""])
@@ -42,33 +43,23 @@ export function CreateGroupForm({ onGroupCreated }: CreateGroupFormProps) {
     setIsLoading(true)
 
     try {
-      const supabase = createClient()
-      const {
-        data: { user },
-      } = await supabase.auth.getUser()
-
-      if (!user) {
-        throw new Error("Usuario no autenticado")
+      if (!creatorName.trim()) {
+        throw new Error("Debes ingresar tu nombre")
       }
 
       const validMembers = members.filter((m) => m.trim() !== "")
 
-      if (validMembers.length === 0) {
-        throw new Error("Debe agregar al menos un miembro")
-      }
+      const allMembers = [creatorName.trim(), ...validMembers]
 
-      console.log("[v0] Creating group with:", { groupName, validMembers })
+      console.log("[v0] Creating group with:", { groupName, allMembers })
 
-      const result = await createGroupWithMembers(user.id, groupName, validMembers)
+      const groupService = getGroupService()
+      const group = await groupService.createGroup(groupName, allMembers)
 
-      if (result.success) {
-        console.log("[v0] Group created successfully:", result.groupId)
-        const { data: group } = await supabase.from("groups").select("*").eq("id", result.groupId).single()
+      setIdentity(group.id, creatorName.trim())
 
-        if (group) {
-          onGroupCreated(group as Group)
-        }
-      }
+      console.log("[v0] Group created successfully:", group.id)
+      onGroupCreated(group)
     } catch (err) {
       console.error("[v0] Error in create group form:", err)
       const errorMessage = err instanceof Error ? err.message : "Error al crear el grupo"
@@ -92,7 +83,7 @@ export function CreateGroupForm({ onGroupCreated }: CreateGroupFormProps) {
             </Label>
             <Input
               id="groupName"
-              placeholder="Nombre del grupo"
+              placeholder="Ej: Viaje a la playa"
               value={groupName}
               onChange={(e) => setGroupName(e.target.value)}
               required
@@ -100,14 +91,29 @@ export function CreateGroupForm({ onGroupCreated }: CreateGroupFormProps) {
             />
           </div>
 
+          <div className="space-y-2">
+            <Label htmlFor="creatorName" className="text-sm font-medium">
+              Tu nombre en el grupo
+            </Label>
+            <Input
+              id="creatorName"
+              placeholder="Ej: Juan"
+              value={creatorName}
+              onChange={(e) => setCreatorName(e.target.value)}
+              required
+              className="h-11"
+            />
+            <p className="text-xs text-muted-foreground">Este será tu nombre dentro del grupo</p>
+          </div>
+
           <div className="space-y-3">
-            <Label className="text-sm font-medium">Miembros</Label>
+            <Label className="text-sm font-medium">Otros miembros (opcional)</Label>
 
             <div className="space-y-2">
               {members.map((member, index) => (
                 <div key={index} className="flex gap-2">
                   <Input
-                    placeholder="Nombre o correo electrónico"
+                    placeholder="Nombre del miembro"
                     value={member}
                     onChange={(e) => updateMember(index, e.target.value)}
                     className="h-11"
@@ -132,7 +138,7 @@ export function CreateGroupForm({ onGroupCreated }: CreateGroupFormProps) {
                 onClick={addMember}
                 className="w-full h-11 text-primary border-primary/20 hover:bg-primary/5 bg-transparent"
               >
-                Añadir
+                Añadir miembro
               </Button>
             </div>
           </div>

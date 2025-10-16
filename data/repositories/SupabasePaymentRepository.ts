@@ -6,11 +6,6 @@ export class SupabasePaymentRepository implements PaymentRepository {
   constructor(private supabase: SupabaseClient) {}
 
   async save(payment: Payment): Promise<void> {
-    const {
-      data: { user },
-    } = await this.supabase.auth.getUser()
-    if (!user) throw new Error("Usuario no autenticado")
-
     const { error } = await this.supabase.from("payments").upsert({
       id: payment.id,
       group_id: payment.groupId,
@@ -18,7 +13,7 @@ export class SupabasePaymentRepository implements PaymentRepository {
       to_member: payment.to,
       amount: payment.amount,
       date: payment.date.toISOString(),
-      user_id: user.id,
+      user_id: null, // Set to null since we're not using authentication
     })
 
     if (error) throw error

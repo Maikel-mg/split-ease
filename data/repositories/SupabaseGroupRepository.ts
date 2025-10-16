@@ -17,14 +17,6 @@ export class SupabaseGroupRepository implements GroupRepository {
   async createGroup(name: string, memberNames: string[]): Promise<Group> {
     console.log("[v0] Creating group:", { name, memberNames })
 
-    const {
-      data: { user },
-    } = await this.supabase.auth.getUser()
-
-    console.log("[v0] Current user:", user?.id)
-
-    if (!user) throw new Error("Usuario no autenticado")
-
     const code = this.generateCode()
     console.log("[v0] Generated code:", code)
 
@@ -33,7 +25,7 @@ export class SupabaseGroupRepository implements GroupRepository {
       .insert({
         name,
         code,
-        user_id: user.id,
+        user_id: null, // No authentication required
       })
       .select()
       .single()
@@ -47,7 +39,7 @@ export class SupabaseGroupRepository implements GroupRepository {
 
     const membersToInsert = memberNames.map((memberName) => ({
       group_id: groupData.id,
-      user_id: null, // Members are just names until they join with their own account
+      user_id: null,
       member_name: memberName,
     }))
 
@@ -122,16 +114,11 @@ export class SupabaseGroupRepository implements GroupRepository {
   }
 
   async addMember(groupId: string, memberName: string): Promise<Member> {
-    const {
-      data: { user },
-    } = await this.supabase.auth.getUser()
-    if (!user) throw new Error("Usuario no autenticado")
-
     const { data, error } = await this.supabase
       .from("group_members")
       .insert({
         group_id: groupId,
-        user_id: user.id,
+        user_id: null,
         member_name: memberName,
       })
       .select()

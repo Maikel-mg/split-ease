@@ -6,10 +6,10 @@ export class SupabaseExpenseRepository implements ExpenseRepository {
   constructor(private supabase: SupabaseClient) {}
 
   async createExpense(expense: Omit<Expense, "id" | "createdAt">): Promise<Expense> {
-    const {
-      data: { user },
-    } = await this.supabase.auth.getUser()
-    if (!user) throw new Error("Usuario no autenticado")
+    //const {
+    //  data: { user },
+    //} = await this.supabase.auth.getUser()
+    //if (!user) throw new Error("Usuario no autenticado")
 
     const { data, error } = await this.supabase
       .from("expenses")
@@ -20,7 +20,7 @@ export class SupabaseExpenseRepository implements ExpenseRepository {
         payer: expense.paidBy, // Changed from expense.payer to expense.paidBy
         participants: expense.participants,
         date: expense.date.toISOString(),
-        user_id: user.id,
+        //user_id: user.id,
       })
       .select()
       .single()
