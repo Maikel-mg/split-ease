@@ -6,6 +6,7 @@ import { Trash2, Pencil } from "lucide-react"
 import type { Expense } from "@/core/entities/Expense"
 import type { Group } from "@/core/entities/Group"
 import { getExpenseService } from "@/lib/services"
+import { deleteExpenseImage } from "@/lib/upload-image"
 import { useState } from "react"
 
 interface ExpenseListProps {
@@ -27,6 +28,11 @@ export function ExpenseList({ group, expenses, onExpenseDeleted, onExpenseEdit }
 
     setDeletingId(expenseId)
     try {
+      const expense = expenses.find((e) => e.id === expenseId)
+      if (expense?.imageUrl) {
+        await deleteExpenseImage(expense.imageUrl)
+      }
+
       const expenseService = getExpenseService()
       await expenseService.deleteExpense(expenseId)
       onExpenseDeleted()
@@ -53,6 +59,13 @@ export function ExpenseList({ group, expenses, onExpenseDeleted, onExpenseEdit }
       {expenses.map((expense) => (
         <Card key={expense.id}>
           <CardContent className="p-4">
+            {expense.imageUrl && (
+              <img
+                src={expense.imageUrl || "/placeholder.svg"}
+                alt={expense.description}
+                className="w-full h-48 object-cover rounded-lg mb-3"
+              />
+            )}
             <div className="flex items-start justify-between gap-3">
               <div className="flex-1 min-w-0">
                 <h3 className="font-semibold text-base mb-1">{expense.description}</h3>

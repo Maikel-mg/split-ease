@@ -26,14 +26,35 @@ export class BalanceService {
         payer.totalPaid += expense.amount
       }
 
-      // Split expense among participants
-      const sharePerPerson = expense.amount / expense.participants.length
-      expense.participants.forEach((participantId) => {
-        const participant = balances.get(participantId)
-        if (participant) {
-          participant.totalOwed += sharePerPerson
-        }
-      })
+      if (expense.splitMode === "equally") {
+        // Split equally among participants
+        const sharePerPerson = expense.amount / expense.participants.length
+        expense.participants.forEach((participantId) => {
+          const participant = balances.get(participantId)
+          if (participant) {
+            participant.totalOwed += sharePerPerson
+          }
+        })
+      } else if (expense.splitMode === "shares" && expense.splitData) {
+        // Split by shares (multipliers)
+        const totalShares = expense.participants.reduce((sum, id) => sum + (expense.splitData?.[id] || 1), 0)
+        expense.participants.forEach((participantId) => {
+          const participant = balances.get(participantId)
+          if (participant) {
+            const shares = expense.splitData?.[participantId] || 1
+            participant.totalOwed += (expense.amount * shares) / totalShares
+          }
+        })
+      } else if (expense.splitMode === "amounts" && expense.splitData) {
+        // Split by custom amounts
+        expense.participants.forEach((participantId) => {
+          const participant = balances.get(participantId)
+          if (participant) {
+            const customAmount = expense.splitData?.[participantId] || 0
+            participant.totalOwed += customAmount
+          }
+        })
+      }
     })
 
     payments.forEach((payment) => {

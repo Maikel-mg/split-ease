@@ -17,10 +17,12 @@ export class SupabaseExpenseRepository implements ExpenseRepository {
         group_id: expense.groupId,
         amount: expense.amount,
         description: expense.description,
-        payer: expense.paidBy, // Changed from expense.payer to expense.paidBy
+        payer: expense.paidBy,
         participants: expense.participants,
         date: expense.date.toISOString(),
-        //user_id: user.id,
+        image_url: expense.imageUrl || null,
+        split_mode: expense.splitMode,
+        split_data: expense.splitData || null,
       })
       .select()
       .single()
@@ -32,9 +34,12 @@ export class SupabaseExpenseRepository implements ExpenseRepository {
       groupId: data.group_id,
       amount: data.amount,
       description: data.description,
-      paidBy: data.payer, // Map payer column to paidBy field
+      paidBy: data.payer,
       participants: data.participants,
       date: new Date(data.date),
+      imageUrl: data.image_url,
+      splitMode: data.split_mode || "equally",
+      splitData: data.split_data || undefined,
       createdAt: new Date(data.created_at),
     }
   }
@@ -53,9 +58,12 @@ export class SupabaseExpenseRepository implements ExpenseRepository {
       groupId: row.group_id,
       amount: row.amount,
       description: row.description,
-      paidBy: row.payer, // Map payer column to paidBy field
+      paidBy: row.payer,
       participants: row.participants,
       date: new Date(row.date),
+      imageUrl: row.image_url,
+      splitMode: row.split_mode || "equally",
+      splitData: row.split_data || undefined,
       createdAt: new Date(row.created_at),
     }))
   }
@@ -70,9 +78,12 @@ export class SupabaseExpenseRepository implements ExpenseRepository {
       groupId: data.group_id,
       amount: data.amount,
       description: data.description,
-      paidBy: data.payer, // Map payer column to paidBy field
+      paidBy: data.payer,
       participants: data.participants,
       date: new Date(data.date),
+      imageUrl: data.image_url,
+      splitMode: data.split_mode || "equally",
+      splitData: data.split_data || undefined,
       createdAt: new Date(data.created_at),
     }
   }
@@ -87,9 +98,12 @@ export class SupabaseExpenseRepository implements ExpenseRepository {
     const updateData: any = {}
     if (updates.amount !== undefined) updateData.amount = updates.amount
     if (updates.description !== undefined) updateData.description = updates.description
-    if (updates.paidBy !== undefined) updateData.payer = updates.paidBy // Map paidBy field to payer column
+    if (updates.paidBy !== undefined) updateData.payer = updates.paidBy
     if (updates.participants !== undefined) updateData.participants = updates.participants
     if (updates.date !== undefined) updateData.date = updates.date.toISOString()
+    if (updates.imageUrl !== undefined) updateData.image_url = updates.imageUrl
+    if (updates.splitMode !== undefined) updateData.split_mode = updates.splitMode
+    if (updates.splitData !== undefined) updateData.split_data = updates.splitData
 
     const { data, error } = await this.supabase.from("expenses").update(updateData).eq("id", id).select().single()
 
@@ -100,9 +114,12 @@ export class SupabaseExpenseRepository implements ExpenseRepository {
       groupId: data.group_id,
       amount: data.amount,
       description: data.description,
-      paidBy: data.payer, // Map payer column to paidBy field
+      paidBy: data.payer,
       participants: data.participants,
       date: new Date(data.date),
+      imageUrl: data.image_url,
+      splitMode: data.split_mode || "equally",
+      splitData: data.split_data || undefined,
       createdAt: new Date(data.created_at),
     }
   }

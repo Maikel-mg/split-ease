@@ -12,6 +12,9 @@ export class ExpenseService {
     description: string,
     participants: string[],
     date?: Date,
+    imageUrl?: string,
+    splitMode?: "equally" | "shares" | "amounts",
+    splitData?: Record<string, number>,
   ): Promise<Expense> {
     if (amount <= 0) {
       throw new Error("El monto debe ser mayor a 0")
@@ -33,6 +36,9 @@ export class ExpenseService {
       description,
       date: date || new Date(),
       participants,
+      imageUrl,
+      splitMode: splitMode || "equally",
+      splitData,
     })
   }
 
@@ -51,6 +57,9 @@ export class ExpenseService {
     description?: string,
     participants?: string[],
     date?: Date,
+    imageUrl?: string,
+    splitMode?: "equally" | "shares" | "amounts",
+    splitData?: Record<string, number>,
   ): Promise<Expense> {
     if (amount !== undefined && amount <= 0) {
       throw new Error("El monto debe ser mayor a 0")
@@ -71,6 +80,9 @@ export class ExpenseService {
     if (description !== undefined) updates.description = description
     if (participants !== undefined) updates.participants = participants
     if (date !== undefined) updates.date = date
+    if (imageUrl !== undefined) updates.imageUrl = imageUrl
+    if (splitMode !== undefined) updates.splitMode = splitMode
+    if (splitData !== undefined) updates.splitData = splitData
 
     return await this.expenseRepository.updateExpense(id, updates)
   }

@@ -117,7 +117,7 @@ export default function GroupPage() {
               <ArrowLeft className="h-4 w-4 mr-2" />
               Volver
             </Button>
-            <h1 className="font-semibold text-lg truncate">{group.name}</h1>
+            
             <Button variant="ghost" size="sm" onClick={() => setShareDialogOpen(true)}>
               <Share2 className="h-4 w-4" />
             </Button>
@@ -138,7 +138,7 @@ export default function GroupPage() {
           <Tabs defaultValue="balances" className="w-full">
             <TabsList className="grid w-full grid-cols-3 h-11">
               <TabsTrigger value="balances" className="text-sm">
-                Balances
+                Saldos
               </TabsTrigger>
               <TabsTrigger value="expenses" className="text-sm">
                 Gastos
