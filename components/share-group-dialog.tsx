@@ -67,9 +67,22 @@ export function ShareGroupDialog({ groupName, groupCode, open, onOpenChange }: S
               <div className="space-y-2">
                 <label className="text-sm font-medium">Enlace de invitación</label>
                 <div className="flex items-center gap-2">
-                  <div className="flex-1 px-3 py-2 bg-muted rounded-md text-sm truncate">{joinUrl}</div>
-                  <Button variant="outline" size="icon" onClick={handleCopyUrl} className="shrink-0 bg-transparent">
-                    {copiedUrl ? <Check className="h-4 w-4 text-green-600" /> : <Copy className="h-4 w-4" />}
+                  <Button
+                    variant="outline"
+                    className="flex-1 justify-start bg-muted hover:bg-muted/80"
+                    onClick={handleCopyUrl}
+                  >
+                    {copiedUrl ? (
+                      <>
+                        <Check className="h-4 w-4 text-green-600 mr-2" />
+                        <span className="text-sm">Enlace copiado</span>
+                      </>
+                    ) : (
+                      <>
+                        <Copy className="h-4 w-4 mr-2" />
+                        <span className="text-sm">Copiar enlace de invitación</span>
+                      </>
+                    )}
                   </Button>
                 </div>
                 <p className="text-xs text-muted-foreground">

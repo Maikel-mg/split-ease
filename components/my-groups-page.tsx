@@ -102,11 +102,11 @@ export default function MyGroupsPage() {
 
   const getBalanceDisplay = (balance: number) => {
     if (Math.abs(balance) < 0.01) {
-      return { text: "Saldado", color: "text-muted-foreground" }
+      return { text: "Sin Deudas", color: "text-muted-foreground" }
     } else if (balance > 0) {
-      return { text: `Te deben $${balance.toFixed(2)}`, color: "text-[#10b981]" }
+      return { text: `Te deben ${balance.toFixed(2)}€`, color: "text-[#10b981]" }
     } else {
-      return { text: `Debes $${Math.abs(balance).toFixed(2)}`, color: "text-[#ef4444]" }
+      return { text: `Debes ${Math.abs(balance).toFixed(2)}€`, color: "text-[#ef4444]" }
     }
   }
 
@@ -189,8 +189,8 @@ export default function MyGroupsPage() {
                     <div className="flex-1 min-w-0">
                       <h3 className="font-semibold text-base mb-1 truncate">{group.name}</h3>
                       <p className="text-sm text-muted-foreground">
-                        {group.memberCount} {group.memberCount === 1 ? "miembro" : "miembros"}, Total: $
-                        {group.totalExpenses.toFixed(2)}
+                        {group.memberCount} {group.memberCount === 1 ? "miembro" : "miembros"}, Total:{" "}
+                        {group.totalExpenses.toFixed(2)}€
                       </p>
                     </div>
 

@@ -63,7 +63,7 @@ export function ExpenseList({ group, expenses, onExpenseDeleted, onExpenseEdit }
               </div>
               <div className="flex items-start gap-2 flex-shrink-0">
                 <div className="text-right">
-                  <p className="text-xl font-bold">${expense.amount.toFixed(2)}</p>
+                  <p className="text-xl font-bold">{expense.amount.toFixed(2)}€</p>
                 </div>
                 <Button variant="ghost" size="icon" onClick={() => onExpenseEdit(expense)} className="h-8 w-8">
                   <Pencil className="h-4 w-4 text-muted-foreground" />

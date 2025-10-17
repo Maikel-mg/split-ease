@@ -74,7 +74,7 @@ export function DebtSettlement({ debts, groupId, payments, onPaymentsRegistered 
         <CardContent className="py-12 text-center space-y-3">
           <CheckCircle2 className="w-12 h-12 text-primary mx-auto" />
           <p className="text-muted-foreground">No hay deudas pendientes</p>
-          <p className="text-sm text-muted-foreground">Todos los gastos están equilibrados</p>
+          <p className="text-sm text-muted-foreground">Todos los gastos están sin deudas</p>
         </CardContent>
       </Card>
     )

@@ -63,7 +63,7 @@ export function BalanceSummary({ balances, expenses, payments, group }: BalanceS
                         ? `Le deben ${balance.netBalance.toFixed(2)}€`
                         : balance.netBalance < -0.01
                           ? `Debe ${Math.abs(balance.netBalance).toFixed(2)}€`
-                          : "Equilibrado"}
+                          : "Sin Deudas"}
                     </p>
                   </div>
                 </div>
