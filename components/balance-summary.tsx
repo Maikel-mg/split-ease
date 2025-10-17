@@ -36,8 +36,6 @@ export function BalanceSummary({ balances, expenses, payments, group }: BalanceS
     <>
       <div className="space-y-6">
         <div>
-          <h2 className="text-xl font-bold px-1 mb-4">Balances</h2>
-
           <Card>
             <CardContent className="p-4 space-y-3">
               {balances.map((balance) => (

@@ -6,6 +6,7 @@ import { Search, Plus } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { getGroupService, getExpenseService, getBalanceService } from "@/lib/services"
+import { getUserMemberName } from "@/lib/hooks/use-user-identity"
 
 interface GroupWithDetails {
   id: string
@@ -67,12 +68,11 @@ export default function MyGroupsPage() {
             // Calculate balances for the group
             const balances = balanceService.calculateBalances(group, expenses, [])
 
-            // Get user's identity for this group
-            const userIdentity = localStorage.getItem(`user-identity-${groupId}`)
-            const userMemberName = userIdentity || ""
+            const userMemberName = getUserMemberName(groupId) || ""
 
-            // Find user's balance
-            const userBalance = balances.find((b) => b.member === userMemberName)?.balance || 0
+            const userBalance = balances.find((b) => b.memberName === userMemberName)?.netBalance || 0
+
+            console.log("[v0] Group:", group.name, "User:", userMemberName, "Balance:", userBalance)
 
             return {
               id: group.id,

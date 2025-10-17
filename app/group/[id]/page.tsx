@@ -135,17 +135,14 @@ export default function GroupPage() {
             userMemberName={userMemberName}
           />
 
-          <Tabs defaultValue="expenses" className="w-full">
-            <TabsList className="grid w-full grid-cols-4 h-11">
-              <TabsTrigger value="expenses" className="text-sm">
-                Gastos
-              </TabsTrigger>
+          <Tabs defaultValue="balances" className="w-full">
+            <TabsList className="grid w-full grid-cols-3 h-11">
               <TabsTrigger value="balances" className="text-sm">
                 Balances
               </TabsTrigger>
-              <TabsTrigger value="debts" className="text-sm">
-                Deudas
-              </TabsTrigger>
+              <TabsTrigger value="expenses" className="text-sm">
+                Gastos
+              </TabsTrigger>            
               <TabsTrigger value="settlement" className="text-sm">
                 Saldar
               </TabsTrigger>
