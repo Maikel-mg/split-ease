@@ -15,7 +15,7 @@ export function GroupInfo({ group, userMemberName }: GroupInfoProps) {
   const [membersExpanded, setMembersExpanded] = useState(false)
 
   return (
-   <h1 className="font-semibold text-lg truncate">{group.name}</h1>
+   <h1 className="font-semibold text-center text-lg truncate">{group.name}</h1>
         //<h3 className="text-2xl text-center font-bold">{group.name}</h3>
    
   )
