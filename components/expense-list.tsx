@@ -23,6 +23,17 @@ export function ExpenseList({ group, expenses, onExpenseDeleted, onExpenseEdit }
     return group.members.find((m) => m.id === memberId)?.name || "Desconocido"
   }
 
+  const getParticipantText = (participantIds: string[]) => {
+    const participantCount = participantIds.length
+    const totalMembers = group.members.length
+
+    if (participantCount === totalMembers) {
+      return "Todos"
+    }
+
+    return `${participantCount} ${participantCount === 1 ? "persona" : "personas"}`
+  }
+
   const handleDelete = async (expenseId: string) => {
     if (!confirm("¿Estás seguro de eliminar este gasto?")) return
 
@@ -71,7 +82,7 @@ export function ExpenseList({ group, expenses, onExpenseDeleted, onExpenseEdit }
                 <h3 className="font-semibold text-base mb-0.5">{expense.description}</h3>
                 <p className="text-sm text-muted-foreground mb-1">Pagado por: {getMemberName(expense.paidBy)}</p>
                 <p className="text-xs text-muted-foreground">
-                  Participantes: {expense.participants.map((id) => getMemberName(id)).join(", ")}
+                  Participantes: {getParticipantText(expense.participants)}
                 </p>
               </div>
               <div className="flex items-start gap-2 flex-shrink-0">
