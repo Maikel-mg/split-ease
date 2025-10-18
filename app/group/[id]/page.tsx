@@ -36,6 +36,7 @@ export default function GroupPage() {
   const [editingExpense, setEditingExpense] = useState<Expense | undefined>(undefined)
   const [shareDialogOpen, setShareDialogOpen] = useState(false)
   const [addMemberDialogOpen, setAddMemberDialogOpen] = useState(false)
+  const [dropdownOpen, setDropdownOpen] = useState(false)
 
   const loadData = async () => {
     try {
@@ -102,6 +103,18 @@ export default function GroupPage() {
     loadData()
   }
 
+  const handleShareClick = () => {
+    console.log("[v0] Share clicked")
+    setShareDialogOpen(true)
+    setDropdownOpen(false)
+  }
+
+  const handleAddMemberClick = () => {
+    console.log("[v0] Add member clicked")
+    setAddMemberDialogOpen(true)
+    setDropdownOpen(false)
+  }
+
   if (loading) {
     return (
       <main className="min-h-screen bg-background p-4 md:p-8">
@@ -126,18 +139,24 @@ export default function GroupPage() {
               Volver
             </Button>
 
-            <DropdownMenu>
+            <DropdownMenu
+              open={dropdownOpen}
+              onOpenChange={(open) => {
+                console.log("[v0] Dropdown open state changed:", open)
+                setDropdownOpen(open)
+              }}
+            >
               <DropdownMenuTrigger asChild>
-                <Button variant="ghost" size="sm">
+                <Button variant="ghost" size="sm" onClick={() => console.log("[v0] Dropdown trigger clicked")}>
                   <MoreVertical className="h-4 w-4" />
                 </Button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent align="end">
-                <DropdownMenuItem onClick={() => setShareDialogOpen(true)}>
+              <DropdownMenuContent align="end" className="z-50">
+                <DropdownMenuItem onClick={handleShareClick}>
                   <Share2 className="h-4 w-4 mr-2" />
                   Compartir
                 </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => setAddMemberDialogOpen(true)}>
+                <DropdownMenuItem onClick={handleAddMemberClick}>
                   <UserPlus className="h-4 w-4 mr-2" />
                   Añadir persona
                 </DropdownMenuItem>
