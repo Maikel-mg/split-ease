@@ -45,14 +45,10 @@ export function JoinGroupForm({ onGroupJoined }: JoinGroupFormProps) {
       if (result.success) {
         setIdentity(result.groupId, displayName.trim())
 
-        if (result.alreadyMember) {
-          setError("Ya eres miembro de este grupo")
-        } else {
-          // Navigate to the group page
-          router.push(`/group/${result.groupId}`)
-          if (onGroupJoined) {
-            onGroupJoined(result.groupId)
-          }
+        // Navigate to the group page
+        router.push(`/group/${result.groupId}`)
+        if (onGroupJoined) {
+          onGroupJoined(result.groupId)
         }
       }
     } catch (err) {
