@@ -55,21 +55,21 @@ export function ExpenseList({ group, expenses, onExpenseDeleted, onExpenseEdit }
   }
 
   return (
-    <div className="space-y-3">
+    <div className="space-y-2">
       {expenses.map((expense) => (
         <Card key={expense.id}>
-          <CardContent className="p-4">
+          <CardContent className="p-3">
             {expense.imageUrl && (
               <img
                 src={expense.imageUrl || "/placeholder.svg"}
                 alt={expense.description}
-                className="w-full h-48 object-cover rounded-lg mb-3"
+                className="w-full h-48 object-cover rounded-lg mb-2"
               />
             )}
-            <div className="flex items-start justify-between gap-3">
+            <div className="flex items-start justify-between gap-2">
               <div className="flex-1 min-w-0">
-                <h3 className="font-semibold text-base mb-1">{expense.description}</h3>
-                <p className="text-sm text-muted-foreground mb-2">Pagado por: {getMemberName(expense.paidBy)}</p>
+                <h3 className="font-semibold text-base mb-0.5">{expense.description}</h3>
+                <p className="text-sm text-muted-foreground mb-1">Pagado por: {getMemberName(expense.paidBy)}</p>
                 <p className="text-xs text-muted-foreground">
                   Participantes: {expense.participants.map((id) => getMemberName(id)).join(", ")}
                 </p>
@@ -92,7 +92,7 @@ export function ExpenseList({ group, expenses, onExpenseDeleted, onExpenseEdit }
                 </Button>
               </div>
             </div>
-            <div className="mt-3 pt-3 border-t">
+            <div className="mt-2 pt-2 border-t">
               <p className="text-xs text-muted-foreground">
                 {new Date(expense.date).toLocaleDateString("es-ES", {
                   day: "numeric",

@@ -70,14 +70,14 @@ export function PaymentHistoryDialog({ payments, onPaymentDeleted }: PaymentHist
           ) : (
             payments.map((payment) => (
               <Card key={payment.id}>
-                <CardContent className="p-3">
-                  <div className="flex items-start justify-between gap-3">
+                <CardContent className="p-2">
+                  <div className="flex items-start justify-between gap-2">
                     <div className="flex-1 min-w-0">
                       <div className="text-sm font-semibold truncate">
                         De <span className="font-bold">{payment.from}</span> → Para{" "}
                         <span className="font-bold">{payment.to}</span>
                       </div>
-                      <div className="text-xs text-muted-foreground mt-1">{formatDate(payment.registeredAt)}</div>
+                      <div className="text-xs text-muted-foreground mt-0.5">{formatDate(payment.registeredAt)}</div>
                     </div>
                     <div className="flex items-center gap-2 flex-shrink-0">
                       <span className="text-sm font-bold">{payment.amount.toFixed(2)}€</span>

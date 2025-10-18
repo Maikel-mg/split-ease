@@ -34,18 +34,18 @@ export function BalanceSummary({ balances, expenses, payments, group }: BalanceS
 
   return (
     <>
-      <div className="space-y-2">
+      <div className="space-y-1">
         <div>
           <Card>
-            <CardContent className="p-3">
+            <CardContent className="p-2">
               {balances.map((balance) => (
                 <div
                   key={balance.memberId}
                   onClick={() => setSelectedMember({ id: balance.memberId, name: balance.memberName })}
-                  className="flex items-center gap-3 py-2 px-1 cursor-pointer hover:bg-muted/50 rounded-lg transition-colors"
+                  className="flex items-center gap-2 py-1.5 px-1 cursor-pointer hover:bg-muted/50 rounded-lg transition-colors"
                 >
-                  <div className="w-10 h-10 rounded-full bg-muted flex items-center justify-center flex-shrink-0">
-                    <User className="w-5 h-5 text-muted-foreground" />
+                  <div className="w-9 h-9 rounded-full bg-muted flex items-center justify-center flex-shrink-0">
+                    <User className="w-4 h-4 text-muted-foreground" />
                   </div>
 
                   <div className="flex-1 min-w-0">
