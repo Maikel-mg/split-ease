@@ -34,36 +34,39 @@ export function BalanceSummary({ balances, expenses, payments, group }: BalanceS
 
   return (
     <>
-      <div className="space-y-6">
+      <div className="space-y-2">
         <div>
           <Card>
-            <CardContent className="p-4 space-y-3">
+            <CardContent className="p-3">
               {balances.map((balance) => (
                 <div
                   key={balance.memberId}
                   onClick={() => setSelectedMember({ id: balance.memberId, name: balance.memberName })}
-                  className="flex items-center gap-3 py-2 cursor-pointer hover:bg-muted/50 rounded-lg px-2 -mx-2 transition-colors"
+                  className="flex items-center gap-3 py-2 px-1 cursor-pointer hover:bg-muted/50 rounded-lg transition-colors"
                 >
                   <div className="w-10 h-10 rounded-full bg-muted flex items-center justify-center flex-shrink-0">
                     <User className="w-5 h-5 text-muted-foreground" />
                   </div>
 
                   <div className="flex-1 min-w-0">
-                    <p className="font-semibold text-base">{balance.memberName}</p>
+                    <p className="font-medium text-base">{balance.memberName}</p>
+                  </div>
+
+                  <div className="text-right flex-shrink-0">
                     <p
-                      className={`text-sm font-medium ${
+                      className={`text-lg font-semibold ${
                         balance.netBalance > 0.01
-                          ? "text-primary"
+                          ? "text-green-500"
                           : balance.netBalance < -0.01
-                            ? "text-destructive"
+                            ? "text-red-500"
                             : "text-muted-foreground"
                       }`}
                     >
                       {balance.netBalance > 0.01
-                        ? `Le deben ${balance.netBalance.toFixed(2)}€`
+                        ? `+${balance.netBalance.toFixed(2)} €`
                         : balance.netBalance < -0.01
-                          ? `Debe ${Math.abs(balance.netBalance).toFixed(2)}€`
-                          : "Sin Deudas"}
+                          ? `-${Math.abs(balance.netBalance).toFixed(2)} €`
+                          : "0,00 €"}
                     </p>
                   </div>
                 </div>
