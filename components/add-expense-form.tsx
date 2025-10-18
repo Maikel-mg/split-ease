@@ -21,6 +21,7 @@ import { getExpenseService } from "@/lib/services"
 import { uploadExpenseImage, deleteExpenseImage } from "@/lib/upload-image"
 import type { Group } from "@/core/entities/Group"
 import type { Expense } from "@/core/entities/Expense"
+import { useUserIdentity } from "@/lib/hooks/use-user-identity"
 
 interface AddExpenseFormProps {
   group: Group
@@ -30,6 +31,8 @@ interface AddExpenseFormProps {
 }
 
 export function AddExpenseForm({ group, onExpenseAdded, editExpense, onExpenseUpdated }: AddExpenseFormProps) {
+  const { userMemberName } = useUserIdentity(group.id)
+
   const [open, setOpen] = useState(false)
   const [amount, setAmount] = useState("")
   const [description, setDescription] = useState("")
@@ -43,6 +46,15 @@ export function AddExpenseForm({ group, onExpenseAdded, editExpense, onExpenseUp
   const [imageFile, setImageFile] = useState<File | null>(null)
   const [imagePreview, setImagePreview] = useState<string | null>(null)
   const [isUploadingImage, setIsUploadingImage] = useState(false)
+
+  useEffect(() => {
+    if (open && !editExpense && userMemberName) {
+      const currentUserMember = group.members.find((m) => m.name === userMemberName)
+      if (currentUserMember) {
+        setPaidBy(currentUserMember.id)
+      }
+    }
+  }, [open, editExpense, userMemberName, group.members])
 
   useEffect(() => {
     if (open && !editExpense) {
@@ -118,10 +130,8 @@ export function AddExpenseForm({ group, onExpenseAdded, editExpense, onExpenseUp
 
   const toggleAllParticipants = () => {
     if (participants.length === group.members.length) {
-      // Deselect all
       setParticipants([])
     } else {
-      // Select all
       setParticipants(group.members.map((m) => m.id))
       const initialSplitData: Record<string, number> = {}
       group.members.forEach((m) => {
