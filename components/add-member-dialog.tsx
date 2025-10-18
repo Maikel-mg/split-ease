@@ -3,21 +3,21 @@
 import type React from "react"
 
 import { useState } from "react"
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { UserPlus } from "lucide-react"
 import { getGroupService } from "@/lib/services"
 import type { Group } from "@/core/entities/Group"
 
 interface AddMemberDialogProps {
   group: Group
   onMemberAdded: () => void
+  open: boolean
+  onOpenChange: (open: boolean) => void
 }
 
-export function AddMemberDialog({ group, onMemberAdded }: AddMemberDialogProps) {
-  const [open, setOpen] = useState(false)
+export function AddMemberDialog({ group, onMemberAdded, open, onOpenChange }: AddMemberDialogProps) {
   const [memberName, setMemberName] = useState("")
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState("")
@@ -46,30 +46,23 @@ export function AddMemberDialog({ group, onMemberAdded }: AddMemberDialogProps) 
       await groupService.addMemberToGroup(group.id, memberName.trim())
 
       setMemberName("")
-      setOpen(false)
       onMemberAdded()
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Error al agregar miembro")
+      setError(err instanceof Error ? err.message : "Error al agregar persona")
     } finally {
       setLoading(false)
     }
   }
 
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger asChild>
-        <Button variant="ghost" size="sm">
-          <UserPlus className="h-4 w-4 mr-2" />
-          Agregar miembro
-        </Button>
-      </DialogTrigger>
+    <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
-          <DialogTitle>Agregar nuevo miembro</DialogTitle>
+          <DialogTitle>Agregar nueva persona</DialogTitle>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-2">
-            <Label htmlFor="memberName">Nombre del miembro</Label>
+            <Label htmlFor="memberName">Nombre de la persona</Label>
             <Input
               id="memberName"
               placeholder="Ej: Juan"
@@ -84,7 +77,7 @@ export function AddMemberDialog({ group, onMemberAdded }: AddMemberDialogProps) 
             {error && <p className="text-sm text-destructive">{error}</p>}
           </div>
           <div className="flex justify-end gap-2">
-            <Button type="button" variant="outline" onClick={() => setOpen(false)} disabled={loading}>
+            <Button type="button" variant="outline" onClick={() => onOpenChange(false)} disabled={loading}>
               Cancelar
             </Button>
             <Button type="submit" disabled={loading}>

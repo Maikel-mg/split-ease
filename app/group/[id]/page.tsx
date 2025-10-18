@@ -4,7 +4,8 @@ import { useState, useEffect } from "react"
 import { useParams, useRouter } from "next/navigation"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Button } from "@/components/ui/button"
-import { ArrowLeft, Share2 } from "lucide-react"
+import { ArrowLeft, MoreVertical, Share2, UserPlus } from "lucide-react"
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 import { AddExpenseForm } from "@/components/add-expense-form"
 import { ExpenseList } from "@/components/expense-list"
 import { BalanceSummary } from "@/components/balance-summary"
@@ -12,6 +13,7 @@ import { SimplifiedDebts } from "@/components/simplified-debts"
 import { DebtSettlement } from "@/components/debt-settlement"
 import { GroupInfo } from "@/components/group-info"
 import { ShareGroupDialog } from "@/components/share-group-dialog"
+import { AddMemberDialog } from "@/components/add-member-dialog"
 import { getGroupService, getExpenseService, getBalanceService, getPaymentService } from "@/lib/services"
 import { useUserIdentity } from "@/lib/hooks/use-user-identity"
 import type { Group } from "@/core/entities/Group"
@@ -33,6 +35,7 @@ export default function GroupPage() {
   const [loading, setLoading] = useState(true)
   const [editingExpense, setEditingExpense] = useState<Expense | undefined>(undefined)
   const [shareDialogOpen, setShareDialogOpen] = useState(false)
+  const [addMemberDialogOpen, setAddMemberDialogOpen] = useState(false)
 
   const loadData = async () => {
     try {
@@ -95,6 +98,7 @@ export default function GroupPage() {
   }
 
   const handleMemberAdded = () => {
+    setAddMemberDialogOpen(false)
     loadData()
   }
 
@@ -122,14 +126,28 @@ export default function GroupPage() {
               Volver
             </Button>
 
-            <Button variant="ghost" size="sm" onClick={() => setShareDialogOpen(true)}>
-              <Share2 className="h-4 w-4" />
-            </Button>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="ghost" size="sm">
+                  <MoreVertical className="h-4 w-4" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                <DropdownMenuItem onClick={() => setShareDialogOpen(true)}>
+                  <Share2 className="h-4 w-4 mr-2" />
+                  Compartir
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => setAddMemberDialogOpen(true)}>
+                  <UserPlus className="h-4 w-4 mr-2" />
+                  Añadir persona
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
           </div>
         </div>
 
         <div className="p-4 space-y-4">
-          <GroupInfo group={group} userMemberName={userMemberName} onMemberAdded={handleMemberAdded} />
+          <GroupInfo group={group} userMemberName={userMemberName} />
 
           <AddExpenseForm
             group={group}
@@ -194,6 +212,14 @@ export default function GroupPage() {
         open={shareDialogOpen}
         onOpenChange={setShareDialogOpen}
       />
+      {group && (
+        <AddMemberDialog
+          group={group}
+          onMemberAdded={handleMemberAdded}
+          open={addMemberDialogOpen}
+          onOpenChange={setAddMemberDialogOpen}
+        />
+      )}
     </main>
   )
 }
