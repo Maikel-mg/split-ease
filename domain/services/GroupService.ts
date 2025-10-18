@@ -46,4 +46,23 @@ export class GroupService {
   async getGroupByCode(code: string): Promise<Group | null> {
     return await this.groupRepository.getGroupByCode(code)
   }
+
+  async addMemberToGroup(groupId: string, memberName: string): Promise<void> {
+    if (!memberName.trim()) {
+      throw new Error("El nombre del miembro es requerido")
+    }
+
+    const group = await this.groupRepository.getGroup(groupId)
+    if (!group) {
+      throw new Error("Grupo no encontrado")
+    }
+
+    // Check if member already exists
+    const memberExists = group.members.some((m) => m.name.toLowerCase() === memberName.toLowerCase())
+    if (memberExists) {
+      throw new Error("Este nombre ya existe en el grupo")
+    }
+
+    await this.groupRepository.addMember(groupId, memberName)
+  }
 }

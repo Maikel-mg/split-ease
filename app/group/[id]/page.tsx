@@ -94,6 +94,10 @@ export default function GroupPage() {
     router.push("/grupos")
   }
 
+  const handleMemberAdded = () => {
+    loadData()
+  }
+
   if (loading) {
     return (
       <main className="min-h-screen bg-background p-4 md:p-8">
@@ -117,7 +121,7 @@ export default function GroupPage() {
               <ArrowLeft className="h-4 w-4 mr-2" />
               Volver
             </Button>
-            
+
             <Button variant="ghost" size="sm" onClick={() => setShareDialogOpen(true)}>
               <Share2 className="h-4 w-4" />
             </Button>
@@ -125,7 +129,7 @@ export default function GroupPage() {
         </div>
 
         <div className="p-4 space-y-4">
-          <GroupInfo group={group} userMemberName={userMemberName} />
+          <GroupInfo group={group} userMemberName={userMemberName} onMemberAdded={handleMemberAdded} />
 
           <AddExpenseForm
             group={group}
@@ -142,7 +146,7 @@ export default function GroupPage() {
               </TabsTrigger>
               <TabsTrigger value="expenses" className="text-sm">
                 Gastos
-              </TabsTrigger>            
+              </TabsTrigger>
               <TabsTrigger value="settlement" className="text-sm">
                 Saldar
               </TabsTrigger>
