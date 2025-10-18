@@ -90,7 +90,7 @@ export function DebtSettlement({ debts, groupId, payments, onPaymentsRegistered 
                 <Checkbox
                   checked={selectedDebts.has(index)}
                   onCheckedChange={() => toggleDebt(index)}
-                  className="flex-shrink-0"
+                  className="flex-shrink-0 border-2 border-muted-foreground/30 bg-background"
                   disabled={isSaving}
                 />
                 <div className="flex-1 min-w-0">
