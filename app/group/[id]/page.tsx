@@ -139,19 +139,11 @@ export default function GroupPage() {
               Volver
             </Button>
 
-            <DropdownMenu
-              open={dropdownOpen}
-              onOpenChange={(open) => {
-                console.log("[v0] Dropdown open state changed:", open)
-                setDropdownOpen(open)
-              }}
-            >
-              <DropdownMenuTrigger asChild>
-                <Button variant="ghost" size="sm" onClick={() => console.log("[v0] Dropdown trigger clicked")}>
-                  <MoreVertical className="h-4 w-4" />
-                </Button>
+            <DropdownMenu>
+              <DropdownMenuTrigger className="inline-flex items-center justify-center rounded-md text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground h-9 w-9">
+                <MoreVertical className="h-5 w-5" />
               </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="z-50">
+              <DropdownMenuContent align="end" className="w-48">
                 <DropdownMenuItem onClick={handleShareClick}>
                   <Share2 className="h-4 w-4 mr-2" />
                   Compartir
