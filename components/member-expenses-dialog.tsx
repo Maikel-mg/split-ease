@@ -26,6 +26,20 @@ export function MemberExpensesDialog({
   payments,
   group,
 }: MemberExpensesDialogProps) {
+  const calculateShareAmount = (expense: Expense, participantId: string): number => {
+    if (expense.splitMode === "equally") {
+      return expense.amount / expense.participants.length
+    } else if (expense.splitMode === "shares" && expense.splitData) {
+      const totalShares = expense.participants.reduce((sum, id) => sum + (expense.splitData?.[id] || 1), 0)
+      const memberShares = expense.splitData[participantId] || 1
+      return (expense.amount * memberShares) / totalShares
+    } else if (expense.splitMode === "amounts" && expense.splitData) {
+      return expense.splitData[participantId] || 0
+    }
+    // Fallback to equal split if no split mode is defined
+    return expense.amount / expense.participants.length
+  }
+
   // Filter expenses where the member participated
   const memberExpenses = expenses.filter((expense) => expense.participants.includes(memberId))
 
@@ -37,13 +51,12 @@ export function MemberExpensesDialog({
   let totalOwed = 0
 
   memberExpenses.forEach((expense) => {
-    const shareAmount = expense.amount / expense.participants.length
-
     if (expense.paidBy === memberId) {
       totalPaid += expense.amount
     }
 
     if (expense.participants.includes(memberId)) {
+      const shareAmount = calculateShareAmount(expense, memberId)
       totalOwed += shareAmount
     }
   })
@@ -106,7 +119,7 @@ export function MemberExpensesDialog({
               <p className="text-sm text-muted-foreground text-center py-4">No hay gastos para mostrar</p>
             ) : (
               memberExpenses.map((expense) => {
-                const shareAmount = expense.amount / expense.participants.length
+                const shareAmount = calculateShareAmount(expense, memberId)
                 const isPayer = expense.paidBy === memberId
                 const payerName = group.members.find((m) => m.id === expense.paidBy)?.name || "Desconocido"
 
