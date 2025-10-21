@@ -6,5 +6,6 @@ export interface GroupRepository {
   getGroup(id: string): Promise<Group | null>
   getGroupByCode(code: string): Promise<Group | null>
   addMember(groupId: string, memberName: string): Promise<Member>
+  removeMember(groupId: string, memberId: string): Promise<void>
   updateGroup(group: Group): Promise<void>
 }

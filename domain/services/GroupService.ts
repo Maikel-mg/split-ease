@@ -65,4 +65,22 @@ export class GroupService {
 
     await this.groupRepository.addMember(groupId, memberName)
   }
+
+  async removeMember(groupId: string, memberId: string): Promise<void> {
+    const group = await this.groupRepository.getGroup(groupId)
+    if (!group) {
+      throw new Error("Grupo no encontrado")
+    }
+
+    const memberExists = group.members.some((m) => m.id === memberId)
+    if (!memberExists) {
+      throw new Error("Miembro no encontrado")
+    }
+
+    if (group.members.length <= 1) {
+      throw new Error("No se puede eliminar el último miembro del grupo")
+    }
+
+    await this.groupRepository.removeMember(groupId, memberId)
+  }
 }

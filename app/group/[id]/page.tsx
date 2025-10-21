@@ -4,7 +4,7 @@ import { useState, useEffect } from "react"
 import { useParams, useRouter } from "next/navigation"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Button } from "@/components/ui/button"
-import { ArrowLeft, MoreVertical, Share2, UserPlus, Search, X } from "lucide-react"
+import { ArrowLeft, MoreVertical, Share2, UserPlus, Search, X, Users } from "lucide-react"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 import { AddExpenseForm } from "@/components/add-expense-form"
 import { ExpenseList } from "@/components/expense-list"
@@ -13,6 +13,7 @@ import { DebtSettlement } from "@/components/debt-settlement"
 import { GroupInfo } from "@/components/group-info"
 import { ShareGroupDialog } from "@/components/share-group-dialog"
 import { AddMemberDialog } from "@/components/add-member-dialog"
+import { ManageMembersDialog } from "@/components/manage-members-dialog"
 import { getGroupService, getExpenseService, getBalanceService, getPaymentService } from "@/lib/services"
 import { useUserIdentity } from "@/lib/hooks/use-user-identity"
 import type { Group } from "@/core/entities/Group"
@@ -36,6 +37,7 @@ export default function GroupPage() {
   const [editingExpense, setEditingExpense] = useState<Expense | undefined>(undefined)
   const [shareDialogOpen, setShareDialogOpen] = useState(false)
   const [addMemberDialogOpen, setAddMemberDialogOpen] = useState(false)
+  const [manageMembersDialogOpen, setManageMembersDialogOpen] = useState(false)
   const [dropdownOpen, setDropdownOpen] = useState(false)
   const [searchQuery, setSearchQuery] = useState("")
   const [searchVisible, setSearchVisible] = useState(false)
@@ -129,6 +131,15 @@ export default function GroupPage() {
     loadData()
   }
 
+  const handleManageMembersClick = () => {
+    setManageMembersDialogOpen(true)
+    setDropdownOpen(false)
+  }
+
+  const handleMemberRemoved = () => {
+    loadData()
+  }
+
   const filteredExpenses = expenses.filter((expense) => {
     if (!searchQuery.trim()) return true
     const query = searchQuery.toLowerCase()
@@ -192,6 +203,10 @@ export default function GroupPage() {
                   <DropdownMenuItem onClick={handleAddMemberClick}>
                     <UserPlus className="h-4 w-4 mr-2" />
                     Añadir persona
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={handleManageMembersClick}>
+                    <Users className="h-4 w-4 mr-2" />
+                    Gestionar miembros
                   </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
@@ -286,6 +301,15 @@ export default function GroupPage() {
           onMemberAdded={handleMemberAdded}
           open={addMemberDialogOpen}
           onOpenChange={setAddMemberDialogOpen}
+        />
+      )}
+      {group && (
+        <ManageMembersDialog
+          open={manageMembersDialogOpen}
+          onOpenChange={setManageMembersDialogOpen}
+          group={group}
+          balances={balances}
+          onMemberRemoved={handleMemberRemoved}
         />
       )}
     </main>

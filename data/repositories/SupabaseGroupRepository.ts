@@ -138,4 +138,17 @@ export class SupabaseGroupRepository implements GroupRepository {
 
     if (error) throw error
   }
+
+  async removeMember(groupId: string, memberId: string): Promise<void> {
+    const { error } = await this.supabase
+      .from("group_members")
+      .delete()
+      .eq("group_id", groupId)
+      .eq("id", memberId)
+
+    if (error) {
+      console.error("Error removing member:", error)
+      throw new Error(`Error al eliminar el miembro: ${error.message}`)
+    }
+  }
 }
