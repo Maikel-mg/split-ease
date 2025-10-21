@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation"
 import { Search, Plus } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import { getGroupService, getExpenseService, getBalanceService } from "@/lib/services"
+import { getGroupService, getExpenseService, getBalanceService, getPaymentService } from "@/lib/services"
 import { getUserMemberName } from "@/lib/hooks/use-user-identity"
 
 interface GroupWithDetails {
@@ -43,6 +43,7 @@ export default function MyGroupsPage() {
       const groupService = getGroupService()
       const expenseService = getExpenseService()
       const balanceService = getBalanceService()
+      const paymentService = getPaymentService()
 
       const myGroupIdsData = localStorage.getItem("my-group-ids")
       const myGroupIds: string[] = myGroupIdsData ? JSON.parse(myGroupIdsData) : []
@@ -63,10 +64,12 @@ export default function MyGroupsPage() {
             if (!group) return null
 
             const expenses = await expenseService.getExpensesByGroup(group.id)
+            const payments = await paymentService.getPaymentsByGroup(group.id)
             const totalExpenses = expenses.reduce((sum, exp) => sum + exp.amount, 0)
 
             // Calculate balances for the group
-            const balances = balanceService.calculateBalances(group, expenses, [])
+            const balances = balanceService.calculateBalances(group, expenses, payments)
+            console.log(`TCL ~ loadGroups ~ balances:`, balances)
 
             const userMemberName = getUserMemberName(groupId) || ""
 

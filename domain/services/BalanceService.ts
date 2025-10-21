@@ -61,11 +61,12 @@ export class BalanceService {
       // Find members by name
       const payer = Array.from(balances.values()).find((b) => b.memberName === payment.from)
       const receiver = Array.from(balances.values()).find((b) => b.memberName === payment.to)
+      console.log(`TCL ~ BalanceService ~ calculateBalances ~ payer:`, `${payer} - ${receiver}`)
 
       if (payer && receiver) {
-        // Payer made a payment, so they paid more
+        // Payer is settling a debt. Increasing totalPaid increases their net balance (e.g., from -10 to 0).
         payer.totalPaid += payment.amount
-        // Receiver received payment, so they owe more (settling the debt)
+        // Receiver is being paid back. Increasing totalOwed decreases their net balance (e.g., from 10 to 0).
         receiver.totalOwed += payment.amount
       }
     })
