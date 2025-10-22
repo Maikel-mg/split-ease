@@ -83,4 +83,18 @@ export class GroupService {
 
     await this.groupRepository.removeMember(groupId, memberId)
   }
+
+  async updateGroupName(groupId: string, newName: string): Promise<void> {
+    if (!newName.trim()) {
+      throw new Error("El nombre del grupo no puede estar vacío")
+    }
+
+    const group = await this.groupRepository.getGroup(groupId)
+    if (!group) {
+      throw new Error("Grupo no encontrado")
+    }
+
+    group.name = newName.trim()
+    await this.groupRepository.updateGroup(group)
+  }
 }

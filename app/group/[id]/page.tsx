@@ -4,7 +4,7 @@ import { useState, useEffect } from "react"
 import { useParams, useRouter } from "next/navigation"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Button } from "@/components/ui/button"
-import { ArrowLeft, MoreVertical, Share2, UserPlus, Search, X, Users } from "lucide-react"
+import { ArrowLeft, MoreVertical, Share2, UserPlus, Search, X, Users, Pencil } from "lucide-react"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 import { AddExpenseForm } from "@/components/add-expense-form"
 import { ExpenseList } from "@/components/expense-list"
@@ -14,6 +14,7 @@ import { GroupInfo } from "@/components/group-info"
 import { ShareGroupDialog } from "@/components/share-group-dialog"
 import { AddMemberDialog } from "@/components/add-member-dialog"
 import { ManageMembersDialog } from "@/components/manage-members-dialog"
+import { EditGroupTitleDialog } from "@/components/edit-group-title-dialog"
 import { getGroupService, getExpenseService, getBalanceService, getPaymentService } from "@/lib/services"
 import { useUserIdentity } from "@/lib/hooks/use-user-identity"
 import type { Group } from "@/core/entities/Group"
@@ -38,6 +39,7 @@ export default function GroupPage() {
   const [shareDialogOpen, setShareDialogOpen] = useState(false)
   const [addMemberDialogOpen, setAddMemberDialogOpen] = useState(false)
   const [manageMembersDialogOpen, setManageMembersDialogOpen] = useState(false)
+  const [editGroupTitleDialogOpen, setEditGroupTitleDialogOpen] = useState(false)
   const [dropdownOpen, setDropdownOpen] = useState(false)
   const [searchQuery, setSearchQuery] = useState("")
   const [searchVisible, setSearchVisible] = useState(false)
@@ -140,6 +142,15 @@ export default function GroupPage() {
     loadData()
   }
 
+  const handleEditGroupTitleClick = () => {
+    setEditGroupTitleDialogOpen(true)
+  }
+
+  const handleGroupTitleUpdated = () => {
+    loadData()
+    setEditGroupTitleDialogOpen(false)
+  }
+
   const filteredExpenses = expenses.filter((expense) => {
     if (!searchQuery.trim()) return true
     const query = searchQuery.toLowerCase()
@@ -207,6 +218,10 @@ export default function GroupPage() {
                   <DropdownMenuItem onClick={handleManageMembersClick}>
                     <Users className="h-4 w-4 mr-2" />
                     Gestionar miembros
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={handleEditGroupTitleClick}>
+                    <Pencil className="h-4 w-4 mr-2" />
+                    Editar grupo
                   </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
@@ -310,6 +325,14 @@ export default function GroupPage() {
           group={group}
           balances={balances}
           onMemberRemoved={handleMemberRemoved}
+        />
+      )}
+      {group && (
+        <EditGroupTitleDialog
+          group={group}
+          open={editGroupTitleDialogOpen}
+          onOpenChange={setEditGroupTitleDialogOpen}
+          onGroupUpdated={handleGroupTitleUpdated}
         />
       )}
     </main>
