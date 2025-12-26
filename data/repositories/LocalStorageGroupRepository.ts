@@ -44,7 +44,6 @@ export class LocalStorageGroupRepository implements GroupRepository {
       code: this.generateCode(),
       members,
       createdAt: new Date(),
-      archived: false,
     }
 
     groups.push(group)
