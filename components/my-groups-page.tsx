@@ -2,11 +2,13 @@
 
 import { useEffect, useState } from "react"
 import { useRouter } from "next/navigation"
-import { Search, Plus } from "lucide-react"
+import { Search, Plus, MoreVertical } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { getGroupService, getExpenseService, getBalanceService, getPaymentService } from "@/lib/services"
 import { getUserMemberName } from "@/lib/hooks/use-user-identity"
+import { Checkbox } from "@/components/ui/checkbox"
+import { Label } from "@/components/ui/label"
 
 interface GroupWithDetails {
   id: string
@@ -15,6 +17,7 @@ interface GroupWithDetails {
   memberCount: number
   totalExpenses: number
   userBalance: number
+  archived: boolean
 }
 
 export default function MyGroupsPage() {
@@ -23,19 +26,20 @@ export default function MyGroupsPage() {
   const [filteredGroups, setFilteredGroups] = useState<GroupWithDetails[]>([])
   const [searchQuery, setSearchQuery] = useState("")
   const [loading, setLoading] = useState(true)
+  const [showArchived, setShowArchived] = useState(false)
 
   useEffect(() => {
     loadGroups()
   }, [])
 
   useEffect(() => {
-    if (searchQuery.trim() === "") {
-      setFilteredGroups(groups)
-    } else {
-      const filtered = groups.filter((group) => group.name.toLowerCase().includes(searchQuery.toLowerCase()))
-      setFilteredGroups(filtered)
-    }
-  }, [searchQuery, groups])
+    const filtered = groups.filter((group) => {
+      const matchesSearch = group.name.toLowerCase().includes(searchQuery.toLowerCase())
+      const matchesArchived = showArchived ? true : !group.archived
+      return matchesSearch && matchesArchived
+    })
+    setFilteredGroups(filtered)
+  }, [searchQuery, groups, showArchived])
 
   const loadGroups = async () => {
     try {
@@ -84,6 +88,7 @@ export default function MyGroupsPage() {
               memberCount: group.members?.length || 0,
               totalExpenses,
               userBalance,
+              archived: group.archived,
             }
           } catch (error) {
             console.error(`[v0] Error loading group ${groupId}:`, error)
@@ -134,6 +139,7 @@ export default function MyGroupsPage() {
     return colors[index % colors.length]
   }
 
+
   if (loading) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
@@ -153,13 +159,20 @@ export default function MyGroupsPage() {
               <Search className="h-5 w-5" />
             </Button>
           </div>
+          <div className="flex items-center justify-between">
+
           <Input
             type="text"
             placeholder="Buscar grupos..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full"
+            className="w-lg border-gray-300"
           />
+          <div className="flex items-center space-x-1 jsustify-center">
+            <Checkbox id="show-archived" className='border-emearald-300' checked={showArchived} onCheckedChange={(checked) => setShowArchived(Boolean(checked))} />
+            <Label htmlFor="show-archived">Ver archivados</Label>
+          </div>
+            </div>
         </div>
       </div>
 

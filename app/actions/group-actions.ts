@@ -34,6 +34,7 @@ export async function createGroupWithMembers(userId: string, groupName: string, 
         name: groupName,
         code,
         user_id: userId,
+        archived: false,
       })
       .select()
       .single()
@@ -217,13 +218,59 @@ export async function getUserGroups(userId: string) {
           memberCount: memberCount || 0,
           totalExpenses,
           userBalance,
+          archived: group.archived,
         }
       }),
     )
 
     return groupsWithDetails
   } catch (error) {
-    console.error("[v0] Error in getUserGroups:", error)
+    throw error
+  }
+}
+
+export async function archiveGroup(groupId: string) {
+  try {
+    const supabase = createServiceRoleClient()
+    const { error } = await supabase
+      .from("groups")
+      .update({ archived: true })
+      .eq("id", groupId)
+
+    if (error) {
+      console.error("[v0] Error archiving group:", error)
+      throw new Error("Error al archivar el grupo")
+    }
+
+    revalidatePath("/grupos")
+    revalidatePath(`/group/${groupId}`)
+
+    return { success: true }
+  } catch (error) {
+    console.error("[v0] Error in archiveGroup:", error)
+    throw error
+  }
+}
+
+export async function unarchiveGroup(groupId: string) {
+  try {
+    const supabase = createServiceRoleClient()
+    const { error } = await supabase
+      .from("groups")
+      .update({ archived: false })
+      .eq("id", groupId)
+
+    if (error) {
+      console.error("[v0] Error unarchiving group:", error)
+      throw new Error("Error al desarchivar el grupo")
+    }
+
+    revalidatePath("/grupos")
+    revalidatePath(`/group/${groupId}`)
+
+    return { success: true }
+  } catch (error) {
+    console.error("[v0] Error in unarchiveGroup:", error)
     throw error
   }
 }
