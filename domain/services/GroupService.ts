@@ -5,7 +5,7 @@ import type { Group } from "@/core/entities/Group"
 export class GroupService {
   constructor(private groupRepository: GroupRepository) {}
 
-  async createGroup(name: string, memberNames: string[]): Promise<Group> {
+  async createGroup(name: string, memberNames: string[], isPrivate: boolean = false): Promise<Group> {
     if (!name.trim()) {
       throw new Error("El nombre del grupo es requerido")
     }
@@ -13,7 +13,7 @@ export class GroupService {
       throw new Error("Debe agregar al menos un miembro")
     }
 
-    return await this.groupRepository.createGroup(name, memberNames)
+    return await this.groupRepository.createGroup(name, memberNames, isPrivate)
   }
 
   async joinGroup(code: string, memberName: string): Promise<Group> {
@@ -84,7 +84,7 @@ export class GroupService {
     await this.groupRepository.removeMember(groupId, memberId)
   }
 
-  async updateGroupName(groupId: string, newName: string): Promise<void> {
+  async updateGroupSettings(groupId: string, newName: string, isPrivate: boolean): Promise<void> {
     if (!newName.trim()) {
       throw new Error("El nombre del grupo no puede estar vacío")
     }
@@ -95,6 +95,7 @@ export class GroupService {
     }
 
     group.name = newName.trim()
+    group.isPrivate = isPrivate
     await this.groupRepository.updateGroup(group)
   }
 }

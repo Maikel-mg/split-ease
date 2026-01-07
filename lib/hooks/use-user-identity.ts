@@ -8,11 +8,20 @@ const STORAGE_KEY = "group_user_identities"
 const GROUP_IDS_KEY = "my-group-ids"
 
 export function useUserIdentity(groupId: string | null) {
-  const [userMemberName, setUserMemberName] = useState<string | null>(null)
-
+  const [userMemberName, setUserMemberName] = useState<string | null>(() => {
+    // Try to initialize from localStorage immediately to avoid initial null flash
+    if (typeof window !== "undefined" && groupId) {
+       return getUserIdentities()[groupId] || null
+    }
+    return null
+  })
+  
+  // Update if groupId changes later
   useEffect(() => {
-    if (!groupId) return
-
+    if (!groupId) {
+        setUserMemberName(null)
+        return
+    }
     const identities = getUserIdentities()
     setUserMemberName(identities[groupId] || null)
   }, [groupId])

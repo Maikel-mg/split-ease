@@ -18,6 +18,7 @@ interface GroupWithDetails {
   totalExpenses: number
   userBalance: number
   archived: boolean
+  isPrivate: boolean
 }
 
 export default function MyGroupsPage() {
@@ -69,10 +70,24 @@ export default function MyGroupsPage() {
 
             const expenses = await expenseService.getExpensesByGroup(group.id)
             const payments = await paymentService.getPaymentsByGroup(group.id)
-            const totalExpenses = expenses.reduce((sum, exp) => sum + exp.amount, 0)
+            // If private, filter expenses
+            let filteredExpenses = expenses
+            if (group.isPrivate) {
+              const userMemberName = getUserMemberName(groupId)
+              if (userMemberName) {
+                const member = group.members.find((m) => m.name === userMemberName)
+                if (member) {
+                  filteredExpenses = expenses.filter(
+                    (e) => e.paidBy === member.id || e.participants.includes(member.id),
+                  )
+                }
+              }
+            }
+
+            const totalExpenses = filteredExpenses.reduce((sum, exp) => sum + exp.amount, 0)
 
             // Calculate balances for the group
-            const balances = balanceService.calculateBalances(group, expenses, payments)
+            const balances = balanceService.calculateBalances(group, filteredExpenses, payments)
             console.log(`TCL ~ loadGroups ~ balances:`, balances)
 
             const userMemberName = getUserMemberName(groupId) || ""
@@ -89,6 +104,7 @@ export default function MyGroupsPage() {
               totalExpenses,
               userBalance,
               archived: group.archived,
+              isPrivate: group.isPrivate,
             }
           } catch (error) {
             console.error(`[v0] Error loading group ${groupId}:`, error)
@@ -97,7 +113,7 @@ export default function MyGroupsPage() {
         }),
       )
 
-      const validGroups = groupsWithDetails.filter((g) => g !== null) as GroupWithDetails[]
+      const validGroups = groupsWithDetails.filter((g): g is GroupWithDetails => g !== null)
 
       setGroups(validGroups)
       setFilteredGroups(validGroups)
