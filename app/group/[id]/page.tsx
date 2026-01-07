@@ -4,7 +4,7 @@ import { useState, useEffect } from "react"
 import { useParams, useRouter } from "next/navigation"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Button } from "@/components/ui/button"
-import { ArrowLeft, MoreVertical, Share2, UserPlus, Search, X, Users, Pencil, Archive, Undo } from "lucide-react"
+import { ArrowLeft, MoreVertical, Share2, UserPlus, Search, X, Users, Pencil } from "lucide-react"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 import { AddExpenseForm } from "@/components/add-expense-form"
 import { ExpenseList } from "@/components/expense-list"
@@ -22,7 +22,6 @@ import type { Expense } from "@/core/entities/Expense"
 import type { Balance, Debt } from "@/core/entities/Balance"
 import type { Payment } from "@/core/entities/Payment"
 import { Input } from "@/components/ui/input"
-import { archiveGroup, unarchiveGroup } from "@/app/actions/group-actions"
 
 export default function GroupPage() {
   const params = useParams()
@@ -152,28 +151,6 @@ export default function GroupPage() {
     setEditGroupTitleDialogOpen(false)
   }
 
-  const handleArchiveClick = async () => {
-    if (group) {
-      try {
-        await archiveGroup(group.id)
-        router.push("/grupos")
-      } catch (error) {
-        console.error("Error archiving group:", error)
-      }
-    }
-  }
-
-  const handleUnarchiveClick = async () => {
-    if (group) {
-      try {
-        await unarchiveGroup(group.id)
-        loadData()
-      } catch (error) {
-        console.error("Error unarchiving group:", error)
-      }
-    }
-  }
-
   const filteredExpenses = expenses.filter((expense) => {
     if (!searchQuery.trim()) return true
     const query = searchQuery.toLowerCase()
@@ -195,8 +172,6 @@ export default function GroupPage() {
     const toName = debt.to?.toLowerCase() || ""
     return fromName.includes(query) || toName.includes(query)
   })
-
-  const canArchive = balances.every((b) => Math.abs(b.netBalance) < 0.01)
 
   if (loading) {
     return (
@@ -248,17 +223,6 @@ export default function GroupPage() {
                     <Pencil className="h-4 w-4 mr-2" />
                     Editar grupo
                   </DropdownMenuItem>
-                  {group.archived ? (
-                    <DropdownMenuItem onClick={handleUnarchiveClick}>
-                      <Undo className="h-4 w-4 mr-2" />
-                      Desarchivar
-                    </DropdownMenuItem>
-                  ) : (
-                    <DropdownMenuItem onClick={handleArchiveClick} disabled={!canArchive}>
-                      <Archive className="h-4 w-4 mr-2" />
-                      Archivar
-                    </DropdownMenuItem>
-                  )}
                 </DropdownMenuContent>
               </DropdownMenu>
             </div>
