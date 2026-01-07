@@ -159,4 +159,38 @@ export class SupabaseGroupRepository implements GroupRepository {
       throw new Error(`Error al eliminar el miembro: ${error.message}`)
     }
   }
+
+  async getGroupsByIds(groupIds: string[]): Promise<Group[]> {
+    if (groupIds.length === 0) return []
+
+    const { data: groupsData, error: groupsError } = await this.supabase
+      .from("groups")
+      .select("*")
+      .in("id", groupIds)
+
+    if (groupsError) throw groupsError
+
+    const { data: allMembers, error: membersError } = await this.supabase
+      .from("group_members")
+      .select("*")
+      .in("group_id", groupIds)
+
+    if (membersError) throw membersError
+
+    return groupsData.map((g) => ({
+      id: g.id,
+      name: g.name,
+      code: g.code,
+      createdAt: new Date(g.created_at),
+      archived: g.archived,
+      isPrivate: g.is_private,
+      members: (allMembers || [])
+        .filter((m) => m.group_id === g.id)
+        .map((m) => ({
+          id: m.id,
+          name: m.member_name,
+          joinedAt: new Date(m.joined_at),
+        })),
+    }))
+  }
 }
