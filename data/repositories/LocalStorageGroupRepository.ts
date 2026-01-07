@@ -3,6 +3,9 @@ import type { GroupRepository } from "@/core/ports/GroupRepository"
 import type { Group, Member } from "@/core/entities/Group"
 
 export class LocalStorageGroupRepository implements GroupRepository {
+  removeMember(groupId: string, memberId: string): Promise<void> {
+    throw new Error('Method not implemented.')
+  }
   private readonly STORAGE_KEY = "expense-groups"
 
   private generateCode(): string {
@@ -44,6 +47,7 @@ export class LocalStorageGroupRepository implements GroupRepository {
       code: this.generateCode(),
       members,
       createdAt: new Date(),
+      archived: false,
     }
 
     groups.push(group)

@@ -5,6 +5,7 @@ export interface Group {
   code: string
   members: Member[]
   createdAt: Date
+  archived: boolean
 }
 
 export interface Member {

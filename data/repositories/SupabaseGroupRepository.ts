@@ -75,6 +75,7 @@ export class SupabaseGroupRepository implements GroupRepository {
       code: groupData.code,
       members,
       createdAt: new Date(groupData.created_at),
+      archived: groupData.archived,
     }
   }
 
@@ -102,6 +103,7 @@ export class SupabaseGroupRepository implements GroupRepository {
       code: groupData.code,
       members,
       createdAt: new Date(groupData.created_at),
+      archived: groupData.archived,
     }
   }
 
@@ -134,7 +136,7 @@ export class SupabaseGroupRepository implements GroupRepository {
   }
 
   async updateGroup(group: Group): Promise<void> {
-    const { error } = await this.supabase.from("groups").update({ name: group.name }).eq("id", group.id)
+    const { error } = await this.supabase.from("groups").update({ name: group.name, archived: group.archived }).eq("id", group.id)
 
     if (error) throw error
   }
