@@ -2,7 +2,7 @@
 import type { Group, Member } from "../entities/Group"
 
 export interface GroupRepository {
-  createGroup(name: string, members: string[]): Promise<Group>
+  createGroup(name: string, members: string[], isPrivate: boolean): Promise<Group>
   getGroup(id: string): Promise<Group | null>
   getGroupByCode(code: string): Promise<Group | null>
   addMember(groupId: string, memberName: string): Promise<Member>

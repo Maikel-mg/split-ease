@@ -12,6 +12,7 @@ import {
 } from '@/components/ui/dialog'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
+import { Checkbox } from '@/components/ui/checkbox'
 import { getGroupService } from '@/lib/services'
 import { useToast } from '@/hooks/use-toast'
 import type { Group } from '@/core/entities/Group'
@@ -24,18 +25,19 @@ interface EditGroupTitleDialogProps {
 }
 
 export function EditGroupTitleDialog({ group, open, onOpenChange, onGroupUpdated }: EditGroupTitleDialogProps) {
-  const [name, setName] = useState(group.name)
-  const [isSaving, setIsSaving] = useState(false)
+  const [newTitle, setNewTitle] = useState(group.name)
+  const [isPrivate, setIsPrivate] = useState(group.isPrivate || false)
+  const [isLoading, setIsLoading] = useState(false)
   const { toast } = useToast()
 
   useEffect(() => {
     if (open) {
-      setName(group.name)
+      setNewTitle(group.name)
     }
   }, [open, group.name])
 
   const handleSave = async () => {
-    if (!name.trim()) {
+    if (!newTitle.trim()) {
       toast({
         title: 'Error',
         description: 'El nombre del grupo no puede estar vacío.',
@@ -44,13 +46,13 @@ export function EditGroupTitleDialog({ group, open, onOpenChange, onGroupUpdated
       return
     }
 
-    setIsSaving(true)
+    setIsLoading(true)
     const groupService = getGroupService()
     try {
-      await groupService.updateGroupName(group.id, name.trim())
+      await groupService.updateGroupSettings(group.id, newTitle.trim(), isPrivate)
       toast({
         title: 'Grupo actualizado',
-        description: 'El nombre del grupo se ha cambiado correctamente.',
+        description: 'El grupo se ha actualizado correctamente.',
       })
       onGroupUpdated()
       onOpenChange(false)
@@ -62,7 +64,7 @@ export function EditGroupTitleDialog({ group, open, onOpenChange, onGroupUpdated
         variant: 'destructive',
       })
     } finally {
-      setIsSaving(false)
+      setIsLoading(false)
     }
   }
 
@@ -74,17 +76,35 @@ export function EditGroupTitleDialog({ group, open, onOpenChange, onGroupUpdated
           <DialogDescription>Cambia el nombre de tu grupo aquí. Haz clic en guardar cuando hayas terminado.</DialogDescription>
         </DialogHeader>
         <div className="grid gap-4 py-4">
-          <div className="grid grid-cols-4 items-center gap-4">
-            <Label htmlFor="name" className="text-right">
-              Nombre
-            </Label>
-            <Input id="name" value={name} onChange={(e) => setName(e.target.value)} className="col-span-3" />
+          <div className="space-y-2">
+            <Label htmlFor="title">Nombre del grupo</Label>
+            <Input
+              id="title"
+              value={newTitle}
+              onChange={(e) => setNewTitle(e.target.value)}
+              placeholder="Nombre del grupo"
+            />
+          </div>
+
+          <div className="flex items-center space-x-2">
+            <Checkbox id="edit-isPrivate" checked={isPrivate} onCheckedChange={(checked) => setIsPrivate(checked as boolean)} />
+            <div className="grid gap-1.5 leading-none">
+               <Label
+                htmlFor="edit-isPrivate"
+                className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+               >
+                 Grupo privado
+               </Label>
+               <p className="text-xs text-muted-foreground">
+                 Si activas esta opción, los miembros solo verán los gastos en los que participan.
+               </p>
+            </div>
           </div>
         </div>
         <DialogFooter>
           <Button variant="outline" onClick={() => onOpenChange(false)}>Cancelar</Button>
-          <Button onClick={handleSave} disabled={isSaving}>
-            {isSaving ? 'Guardando...' : 'Guardar'}
+          <Button onClick={handleSave} disabled={isLoading}>
+            {isLoading ? 'Guardando...' : 'Guardar'}
           </Button>
         </DialogFooter>
       </DialogContent>

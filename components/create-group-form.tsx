@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { Checkbox } from "@/components/ui/checkbox"
 import { X } from "lucide-react"
 import type { Group } from "@/core/entities/Group"
 import { getGroupService } from "@/lib/services"
@@ -19,6 +20,7 @@ export function CreateGroupForm({ onGroupCreated }: CreateGroupFormProps) {
   const [groupName, setGroupName] = useState("")
   const [creatorName, setCreatorName] = useState("")
   const [members, setMembers] = useState<string[]>([""])
+  const [isPrivate, setIsPrivate] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState("")
   const { setIdentity } = useUserIdentity(null)
@@ -54,7 +56,7 @@ export function CreateGroupForm({ onGroupCreated }: CreateGroupFormProps) {
       console.log("[v0] Creating group with:", { groupName, allMembers })
 
       const groupService = getGroupService()
-      const group = await groupService.createGroup(groupName, allMembers)
+      const group = await groupService.createGroup(groupName, allMembers, isPrivate)
 
       setIdentity(group.id, creatorName.trim())
 
@@ -141,6 +143,21 @@ export function CreateGroupForm({ onGroupCreated }: CreateGroupFormProps) {
                 Añadir miembro
               </Button>
             </div>
+
+          <div className="flex items-center space-x-2">
+            <Checkbox id="isPrivate" checked={isPrivate} onCheckedChange={(checked) => setIsPrivate(checked as boolean)} />
+            <div className="grid gap-1.5 leading-none">
+              <Label
+                htmlFor="isPrivate"
+                className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+              >
+                Grupo privado
+              </Label>
+              <p className="text-xs text-muted-foreground">
+                Si activas esta opción, los miembros solo verán los gastos en los que participan.
+              </p>
+            </div>
+          </div>
           </div>
 
           {error && <p className="text-sm text-destructive">{error}</p>}

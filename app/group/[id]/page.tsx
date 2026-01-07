@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useCallback } from "react"
 import { useParams, useRouter } from "next/navigation"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Button } from "@/components/ui/button"
@@ -46,7 +46,7 @@ export default function GroupPage() {
   const [searchVisible, setSearchVisible] = useState(false)
   const [activeTab, setActiveTab] = useState("balances")
 
-  const loadData = async () => {
+  const loadData = useCallback(async () => {
     try {
       const groupService = getGroupService()
       const expenseService = getExpenseService()
@@ -62,12 +62,37 @@ export default function GroupPage() {
       const expensesData = await expenseService.getExpensesByGroup(groupId)
       const paymentsData = await paymentService.getPaymentsByGroup(groupId)
 
-      const balancesData = balanceService.calculateBalances(groupData, expensesData, paymentsData)
+      let visibleExpenses: Expense[] = []
+      let visiblePayments: Payment[] = paymentsData
+
+      if (groupData.isPrivate) {
+        if (userMemberName) {
+          const member = groupData.members.find((m) => m.name === userMemberName)
+          if (member) {
+            visibleExpenses = expensesData.filter(
+              (e) => e.paidBy === member.id || e.participants.includes(member.id),
+            )
+            // Only show payments involving the user
+            visiblePayments = paymentsData.filter(
+              (p) => p.from === userMemberName || p.to === userMemberName
+            )
+          }
+        }
+        // If private and no identity yet (or not a member), visibleExpenses/payments remains empty/default?
+        // Actually if no identity, we shouldn't show payments either to be safe.
+        if (!userMemberName) {
+            visiblePayments = []
+        }
+      } else {
+        visibleExpenses = expensesData
+      }
+
+      const balancesData = balanceService.calculateBalances(groupData, visibleExpenses, visiblePayments)
       const debtsData = balanceService.simplifyDebts(balancesData)
 
       setGroup(groupData)
-      setExpenses(expensesData)
-      setPayments(paymentsData)
+      setExpenses(visibleExpenses)
+      setPayments(visiblePayments)
       setBalances(balancesData)
       setDebts(debtsData)
     } catch (error) {
@@ -75,11 +100,11 @@ export default function GroupPage() {
     } finally {
       setLoading(false)
     }
-  }
+  }, [groupId, userMemberName, router])
 
   useEffect(() => {
     loadData()
-  }, [groupId])
+  }, [loadData])
 
   useEffect(() => {
     setSearchQuery("")
@@ -292,7 +317,6 @@ export default function GroupPage() {
             onExpenseAdded={handleExpenseAdded}
             editExpense={editingExpense}
             onExpenseUpdated={handleExpenseUpdated}
-            userMemberName={userMemberName}
           />
 
           <Tabs defaultValue="balances" className="w-full" onValueChange={setActiveTab}>
@@ -314,7 +338,6 @@ export default function GroupPage() {
                 expenses={filteredExpenses}
                 onExpenseDeleted={handleExpenseDeleted}
                 onExpenseEdit={handleExpenseEdit}
-                userMemberName={userMemberName}
               />
             </TabsContent>
 
@@ -324,7 +347,6 @@ export default function GroupPage() {
                 expenses={expenses}
                 payments={payments}
                 group={group}
-                userMemberName={userMemberName}
               />
             </TabsContent>
 
@@ -334,7 +356,6 @@ export default function GroupPage() {
                 groupId={groupId}
                 payments={payments}
                 onPaymentsRegistered={handlePaymentsRegistered}
-                userMemberName={userMemberName}
               />
             </TabsContent>
           </Tabs>

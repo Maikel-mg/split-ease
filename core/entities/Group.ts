@@ -6,6 +6,7 @@ export interface Group {
   members: Member[]
   createdAt: Date
   archived: boolean
+  isPrivate: boolean
 }
 
 export interface Member {

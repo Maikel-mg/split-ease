@@ -14,8 +14,8 @@ export class SupabaseGroupRepository implements GroupRepository {
     return code
   }
 
-  async createGroup(name: string, memberNames: string[]): Promise<Group> {
-    console.log("[v0] Creating group:", { name, memberNames })
+  async createGroup(name: string, memberNames: string[], isPrivate: boolean): Promise<Group> {
+    console.log("[v0] Creating group:", { name, memberNames, isPrivate })
 
     const code = this.generateCode()
     console.log("[v0] Generated code:", code)
@@ -26,6 +26,7 @@ export class SupabaseGroupRepository implements GroupRepository {
         name,
         code,
         user_id: null, // No authentication required
+        is_private: isPrivate,
       })
       .select()
       .single()
@@ -76,6 +77,7 @@ export class SupabaseGroupRepository implements GroupRepository {
       members,
       createdAt: new Date(groupData.created_at),
       archived: groupData.archived,
+      isPrivate: isPrivate,
     }
   }
 
@@ -104,6 +106,7 @@ export class SupabaseGroupRepository implements GroupRepository {
       members,
       createdAt: new Date(groupData.created_at),
       archived: groupData.archived,
+      isPrivate: groupData.is_private,
     }
   }
 
@@ -136,7 +139,10 @@ export class SupabaseGroupRepository implements GroupRepository {
   }
 
   async updateGroup(group: Group): Promise<void> {
-    const { error } = await this.supabase.from("groups").update({ name: group.name, archived: group.archived }).eq("id", group.id)
+    const { error } = await this.supabase
+      .from("groups")
+      .update({ name: group.name, archived: group.archived, is_private: group.isPrivate })
+      .eq("id", group.id)
 
     if (error) throw error
   }
