@@ -5,8 +5,8 @@ import { useRouter } from "next/navigation"
 import { Search, Plus, MoreVertical } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import { getGroupService, getExpenseService, getBalanceService, getPaymentService } from "@/lib/services"
-import { getUserMemberName } from "@/lib/hooks/use-user-identity"
+import { getUserGroupsFromIdentities } from "@/app/actions/group-actions"
+import { getMyGroupIds, getUserMemberName } from "@/lib/hooks/use-user-identity"
 import { Checkbox } from "@/components/ui/checkbox"
 import { Label } from "@/components/ui/label"
 
@@ -45,13 +45,8 @@ export default function MyGroupsPage() {
   const loadGroups = async () => {
     try {
       setLoading(true)
-      const groupService = getGroupService()
-      const expenseService = getExpenseService()
-      const balanceService = getBalanceService()
-      const paymentService = getPaymentService()
-
-      const myGroupIdsData = localStorage.getItem("my-group-ids")
-      const myGroupIds: string[] = myGroupIdsData ? JSON.parse(myGroupIdsData) : []
+      
+      const myGroupIds = getMyGroupIds()
 
       console.log("[v0] My group IDs:", myGroupIds)
 
@@ -62,61 +57,15 @@ export default function MyGroupsPage() {
         return
       }
 
-      const groupsWithDetails: GroupWithDetails[] = await Promise.all(
-        myGroupIds.map(async (groupId) => {
-          try {
-            const group = await groupService.getGroup(groupId)
-            if (!group) return null
+      const identities = myGroupIds.map((id) => ({
+        groupId: id,
+        memberName: getUserMemberName(id) || "",
+      }))
 
-            const expenses = await expenseService.getExpensesByGroup(group.id)
-            const payments = await paymentService.getPaymentsByGroup(group.id)
-            // If private, filter expenses
-            let filteredExpenses = expenses
-            if (group.isPrivate) {
-              const userMemberName = getUserMemberName(groupId)
-              if (userMemberName) {
-                const member = group.members.find((m) => m.name === userMemberName)
-                if (member) {
-                  filteredExpenses = expenses.filter(
-                    (e) => e.paidBy === member.id || e.participants.includes(member.id),
-                  )
-                }
-              }
-            }
+      const groupsWithDetails = await getUserGroupsFromIdentities(identities)
 
-            const totalExpenses = filteredExpenses.reduce((sum, exp) => sum + exp.amount, 0)
-
-            // Calculate balances for the group
-            const balances = balanceService.calculateBalances(group, filteredExpenses, payments)
-            console.log(`TCL ~ loadGroups ~ balances:`, balances)
-
-            const userMemberName = getUserMemberName(groupId) || ""
-
-            const userBalance = balances.find((b) => b.memberName === userMemberName)?.netBalance || 0
-
-            console.log("[v0] Group:", group.name, "User:", userMemberName, "Balance:", userBalance)
-
-            return {
-              id: group.id,
-              name: group.name,
-              code: group.code,
-              memberCount: group.members?.length || 0,
-              totalExpenses,
-              userBalance,
-              archived: group.archived,
-              isPrivate: group.isPrivate,
-            }
-          } catch (error) {
-            console.error(`[v0] Error loading group ${groupId}:`, error)
-            return null
-          }
-        }),
-      )
-
-      const validGroups = groupsWithDetails.filter((g): g is GroupWithDetails => g !== null)
-
-      setGroups(validGroups)
-      setFilteredGroups(validGroups)
+      setGroups(groupsWithDetails)
+      setFilteredGroups(groupsWithDetails)
     } catch (error) {
       console.error("[v0] Error loading groups:", error)
     } finally {

@@ -7,6 +7,11 @@ import type { Group } from "@/core/entities/Group"
 import type { Expense } from "@/core/entities/Expense"
 import type { Payment } from "@/core/entities/Payment"
 
+import { SupabaseGroupRepository } from "@/data/repositories/SupabaseGroupRepository"
+import { SupabaseExpenseRepository } from "@/data/repositories/SupabaseExpenseRepository"
+import { SupabasePaymentRepository } from "@/data/repositories/SupabasePaymentRepository"
+import { GetUserGroupsUseCase, type UserGroupIdentity } from "@/core/use-cases/GetUserGroupsUseCase"
+
 // Create a Supabase client with service role key to bypass RLS
 function createServiceRoleClient() {
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
@@ -18,6 +23,23 @@ function createServiceRoleClient() {
       persistSession: false,
     },
   })
+}
+
+export async function getUserGroupsFromIdentities(identities: UserGroupIdentity[]) {
+  try {
+    const supabase = createServiceRoleClient()
+    const groupRepo = new SupabaseGroupRepository(supabase)
+    const expenseRepo = new SupabaseExpenseRepository(supabase)
+    const paymentRepo = new SupabasePaymentRepository(supabase)
+    const balanceService = new BalanceService()
+
+    const useCase = new GetUserGroupsUseCase(groupRepo, expenseRepo, paymentRepo, balanceService)
+
+    return await useCase.execute(identities)
+  } catch (error) {
+    console.error("[v0] Error in getUserGroupsFromIdentities:", error)
+    throw error
+  }
 }
 
 export async function createGroupWithMembers(userId: string, groupName: string, memberNames: string[]) {

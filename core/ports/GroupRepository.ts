@@ -8,4 +8,5 @@ export interface GroupRepository {
   addMember(groupId: string, memberName: string): Promise<Member>
   removeMember(groupId: string, memberId: string): Promise<void>
   updateGroup(group: Group): Promise<void>
+  getGroupsByIds(groupIds: string[]): Promise<Group[]>
 }
