@@ -88,7 +88,22 @@ export default function GroupPage() {
       }
 
       const balancesData = balanceService.calculateBalances(groupData, visibleExpenses, visiblePayments)
-      const debtsData = balanceService.simplifyDebts(balancesData)
+      
+      let debtsData: any[] = []
+      if (groupData.isPrivate) {
+         // FOR PRIVATE GROUPS: Use Direct Debts and Filter by User
+         // We only want to show debts where the user is involved (Payer or Payee)
+         const allDirectDebts = balanceService.calculateDirectDebts(groupData, visibleExpenses, visiblePayments)
+         
+         if (userMemberName) {
+            debtsData = allDirectDebts.filter(d => d.from === userMemberName || d.to === userMemberName)
+         } else {
+            debtsData = [] // If no identity, show nothing
+         }
+      } else {
+         // FOR PUBLIC GROUPS: Use Greedy Simplification (Standard)
+         debtsData = balanceService.simplifyDebts(balancesData)
+      }
 
       setGroup(groupData)
       setExpenses(visibleExpenses)

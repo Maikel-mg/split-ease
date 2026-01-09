@@ -118,4 +118,101 @@ export class BalanceService {
 
     return debts
   }
+
+  calculateDirectDebts(group: Group, expenses: Expense[], payments: Payment[]): Debt[] {
+    const debtMatrix = new Map<string, Map<string, number>>()
+
+    const addDebt = (fromId: string, toId: string, amount: number) => {
+      if (fromId === toId) return
+      if (!debtMatrix.has(fromId)) debtMatrix.set(fromId, new Map())
+      const debtorMap = debtMatrix.get(fromId)!
+      debtorMap.set(toId, (debtorMap.get(toId) || 0) + amount)
+    }
+
+    // 1. Calculate Gross Debts from Expenses
+    expenses.forEach((expense) => {
+      if (expense.splitMode === "equally") {
+        const sharePerPerson = expense.amount / expense.participants.length
+        expense.participants.forEach((participantId) => {
+          if (participantId !== expense.paidBy) {
+            addDebt(participantId, expense.paidBy, sharePerPerson)
+          }
+        })
+      } else if (expense.splitMode === "shares" && expense.splitData) {
+        const totalShares = expense.participants.reduce((sum, id) => sum + (expense.splitData?.[id] || 1), 0)
+        expense.participants.forEach((participantId) => {
+          if (participantId !== expense.paidBy) {
+            const shares = expense.splitData?.[participantId] || 1
+            const shareAmount = (expense.amount * shares) / totalShares
+            addDebt(participantId, expense.paidBy, shareAmount)
+          }
+        })
+      } else if (expense.splitMode === "amounts" && expense.splitData) {
+        expense.participants.forEach((participantId) => {
+          if (participantId !== expense.paidBy) {
+            const amount = expense.splitData?.[participantId] || 0
+            addDebt(participantId, expense.paidBy, amount)
+          }
+        })
+      }
+    })
+
+    // 2. Subtract Payments (Settle debts)
+    payments.forEach((payment) => {
+      // Find IDs by Name
+      const fromMember = group.members.find((m) => m.name === payment.from)
+      const toMember = group.members.find((m) => m.name === payment.to)
+
+      if (fromMember && toMember) {
+        // Payment from A to B reduces the debt A -> B
+        if (debtMatrix.has(fromMember.id)) {
+          const debtorMap = debtMatrix.get(fromMember.id)!
+          if (debtorMap.has(toMember.id)) {
+             const currentDebt = debtorMap.get(toMember.id)!
+             debtorMap.set(toMember.id, currentDebt - payment.amount)
+          } else {
+             // Negative debt (overpayment or prepay)
+             debtorMap.set(toMember.id, -payment.amount)
+          }
+        } else {
+           debtMatrix.set(fromMember.id, new Map([[toMember.id, -payment.amount]]))
+        }
+      }
+    })
+
+    // 3. Convert Matrix to Debt[]
+    const debts: Debt[] = []
+    const getName = (id: string) => group.members.find((m) => m.id === id)?.name || "Unknown"
+
+    const uniquePairs = new Set<string>() 
+    
+    // Convert to array to iterate safely
+    const allDebtors = Array.from(debtMatrix.keys())
+    
+    // We need to check all possible pairs involved.
+    // Better strategy: Collect all involved IDs, iterate pairs.
+    // Or just iterate existing entries in debtMatrix.
+    
+    debtMatrix.forEach((creditors, debtorId) => {
+      creditors.forEach((_, creditorId) => {
+         const pairKey = [debtorId, creditorId].sort().join('-')
+         if (uniquePairs.has(pairKey)) return
+         uniquePairs.add(pairKey)
+
+         // Calculate Net Flow between A and B
+         const debtAB = (debtMatrix.get(debtorId)?.get(creditorId) || 0)
+         const debtBA = (debtMatrix.get(creditorId)?.get(debtorId) || 0)
+         
+         const net = debtAB - debtBA // + means A owes B, - means B owes A
+         
+         if (net > 0.01) {
+            debts.push({ from: getName(debtorId), to: getName(creditorId), amount: Math.round(net * 100) / 100 })
+         } else if (net < -0.01) {
+            debts.push({ from: getName(creditorId), to: getName(debtorId), amount: Math.round(-net * 100) / 100 })
+         }
+      })
+    })
+
+    return debts
+  }
 }
