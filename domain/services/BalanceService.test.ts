@@ -328,4 +328,35 @@ describe('BalanceService', () => {
         expect.objectContaining({ from: 'Joanna', to: 'Amatxu', amount: 10 }),
     ]));
   });
+
+  it('calculates Relative Balances for UI (Joanna View)', () => {
+      // Scenario: Joanna View (Private)
+      // Direct Debts: Maikel -> Joanna (10), Joanna -> Amatxu (10)
+      
+      const members: Member[] = [
+        { id: 'u-amatxu', name: 'Amatxu', joinedAt: new Date() },
+        { id: 'u-joanna', name: 'Joanna', joinedAt: new Date() },
+        { id: 'u-maikel', name: 'Maikel', joinedAt: new Date() },
+      ];
+      const scenarioGroup: Group = { ...mockGroup, members };
+
+      const directDebts = [
+        { from: 'Maikel', to: 'Joanna', amount: 10 },
+        { from: 'Joanna', to: 'Amatxu', amount: 10 }
+      ];
+
+      const relativeBalances = balanceService.calculateRelativeBalances(scenarioGroup, directDebts, 'Joanna');
+
+      // Maikel: Owes Joanna 10. Relative: -10 (Red)
+      const maikel = relativeBalances.find(b => b.memberName === 'Maikel');
+      expect(maikel?.netBalance).toBe(-10);
+
+      // Amatxu: Joanna owes her 10. Relative: +10 (Green)
+      const amatxu = relativeBalances.find(b => b.memberName === 'Amatxu');
+      expect(amatxu?.netBalance).toBe(10);
+
+      // Joanna: Net (Owes 10, Owed 10) = 0
+      const joanna = relativeBalances.find(b => b.memberName === 'Joanna');
+      expect(joanna?.netBalance).toBe(0);
+  });
 });

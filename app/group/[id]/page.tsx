@@ -105,10 +105,27 @@ export default function GroupPage() {
          debtsData = balanceService.simplifyDebts(balancesData)
       }
 
+
+      
+      // Filter balances for Private Groups
+      let finalBalances = balancesData
+      if (groupData.isPrivate && userMemberName) {
+        // Use Relative Balances based on Direct Debts (Maikel owes Me -10 instead of -20 Global)
+        // We reuse the 'allDirectDebts' calculated above, or recalculate if needed.
+        // But 'allDirectDebts' is inside the if block above.
+        // We should restructure this to be cleaner or recalculate.
+        // Recalculating is cheap.
+        
+        // Note: We need 'allDirectDebts' which was calculated in the block above.
+        // Let's refactor slightly to access it.
+        const directDebts = balanceService.calculateDirectDebts(groupData, visibleExpenses, visiblePayments)
+        finalBalances = balanceService.calculateRelativeBalances(groupData, directDebts, userMemberName)
+      }
+
       setGroup(groupData)
       setExpenses(visibleExpenses)
       setPayments(visiblePayments)
-      setBalances(balancesData)
+      setBalances(finalBalances)
       setDebts(debtsData)
     } catch (error) {
       console.error("Error loading data:", error)
