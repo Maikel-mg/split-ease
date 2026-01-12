@@ -23,6 +23,7 @@ import type { Balance, Debt } from "@/core/entities/Balance"
 import type { Payment } from "@/core/entities/Payment"
 import { Input } from "@/components/ui/input"
 import { archiveGroup, unarchiveGroup } from "@/app/actions/group-actions"
+import { GetGroupDetailsUseCase } from "@/core/use-cases/GetGroupDetailsUseCase"
 
 export default function GroupPage() {
   const params = useParams()
@@ -52,81 +53,26 @@ export default function GroupPage() {
       const expenseService = getExpenseService()
       const balanceService = getBalanceService()
       const paymentService = getPaymentService()
+      
+      const getGroupDetailsUseCase = new GetGroupDetailsUseCase(
+        groupService,
+        expenseService,
+        balanceService,
+        paymentService
+      )
 
-      const groupData = await groupService.getGroup(groupId)
-      if (!groupData) {
+      const details = await getGroupDetailsUseCase.execute(groupId, userMemberName || undefined)
+      
+      if (!details) {
         router.push("/grupos")
         return
       }
 
-      const expensesData = await expenseService.getExpensesByGroup(groupId)
-      const paymentsData = await paymentService.getPaymentsByGroup(groupId)
-
-      let visibleExpenses: Expense[] = []
-      let visiblePayments: Payment[] = paymentsData
-
-      if (groupData.isPrivate) {
-        if (userMemberName) {
-          const member = groupData.members.find((m) => m.name === userMemberName)
-          if (member) {
-            visibleExpenses = expensesData.filter(
-              (e) => e.paidBy === member.id || e.participants.includes(member.id),
-            )
-            // Only show payments involving the user
-            visiblePayments = paymentsData.filter(
-              (p) => p.from === userMemberName || p.to === userMemberName
-            )
-          }
-        }
-        // If private and no identity yet (or not a member), visibleExpenses/payments remains empty/default?
-        // Actually if no identity, we shouldn't show payments either to be safe.
-        if (!userMemberName) {
-            visiblePayments = []
-        }
-      } else {
-        visibleExpenses = expensesData
-      }
-
-      const balancesData = balanceService.calculateBalances(groupData, visibleExpenses, visiblePayments)
-      
-      let debtsData: any[] = []
-      if (groupData.isPrivate) {
-         // FOR PRIVATE GROUPS: Use Direct Debts and Filter by User
-         // We only want to show debts where the user is involved (Payer or Payee)
-         const allDirectDebts = balanceService.calculateDirectDebts(groupData, visibleExpenses, visiblePayments)
-         
-         if (userMemberName) {
-            debtsData = allDirectDebts.filter(d => d.from === userMemberName || d.to === userMemberName)
-         } else {
-            debtsData = [] // If no identity, show nothing
-         }
-      } else {
-         // FOR PUBLIC GROUPS: Use Greedy Simplification (Standard)
-         debtsData = balanceService.simplifyDebts(balancesData)
-      }
-
-
-      
-      // Filter balances for Private Groups
-      let finalBalances = balancesData
-      if (groupData.isPrivate && userMemberName) {
-        // Use Relative Balances based on Direct Debts (Maikel owes Me -10 instead of -20 Global)
-        // We reuse the 'allDirectDebts' calculated above, or recalculate if needed.
-        // But 'allDirectDebts' is inside the if block above.
-        // We should restructure this to be cleaner or recalculate.
-        // Recalculating is cheap.
-        
-        // Note: We need 'allDirectDebts' which was calculated in the block above.
-        // Let's refactor slightly to access it.
-        const directDebts = balanceService.calculateDirectDebts(groupData, visibleExpenses, visiblePayments)
-        finalBalances = balanceService.calculateRelativeBalances(groupData, directDebts, userMemberName)
-      }
-
-      setGroup(groupData)
-      setExpenses(visibleExpenses)
-      setPayments(visiblePayments)
-      setBalances(finalBalances)
-      setDebts(debtsData)
+      setGroup(details.group)
+      setExpenses(details.visibleExpenses)
+      setPayments(details.visiblePayments)
+      setBalances(details.balances)
+      setDebts(details.debts)
     } catch (error) {
       console.error("Error loading data:", error)
     } finally {
