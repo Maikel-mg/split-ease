@@ -2,7 +2,7 @@
 
 import { createClient } from "@supabase/supabase-js"
 import { revalidatePath } from "next/cache"
-import { BalanceService } from "@/domain/services/BalanceService"
+import { BalanceService } from "@/core/services/BalanceService"
 import type { Group } from "@/core/entities/Group"
 import type { Expense } from "@/core/entities/Expense"
 import type { Payment } from "@/core/entities/Payment"
@@ -199,7 +199,11 @@ export async function getUserGroups(userId: string) {
           members: (members || []).map((m) => ({
             id: m.id,
             name: m.member_name,
+            joinedAt: new Date(m.created_at || Date.now()),
           })),
+          createdAt: new Date(group.created_at || Date.now()),
+          archived: group.archived,
+          isPrivate: group.is_private || false,
         }
 
         const expenses: Expense[] = (expensesData || []).map((e) => ({
@@ -210,6 +214,8 @@ export async function getUserGroups(userId: string) {
           paidBy: e.paidBy,
           participants: e.participants as string[],
           date: new Date(e.date),
+          splitMode: e.split_mode || "equally",
+          createdAt: new Date(e.created_at || Date.now()),
         }))
 
         const payments: Payment[] = (paymentsData || []).map((p) => ({
@@ -219,6 +225,7 @@ export async function getUserGroups(userId: string) {
           to: p.to,
           amount: p.amount,
           date: new Date(p.date),
+          registeredAt: new Date(p.created_at || Date.now()),
         }))
 
         // Calculate balances using BalanceService

@@ -1,4 +1,3 @@
-
 import { describe, it, expect } from 'vitest';
 import { BalanceService } from './BalanceService';
 import { Expense } from '@/core/entities/Expense';
