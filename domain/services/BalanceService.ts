@@ -215,4 +215,41 @@ export class BalanceService {
 
     return debts
   }
+
+  calculateRelativeBalances(group: Group, directDebts: Debt[], userMemberName: string): Balance[] {
+     const balances = new Map<string, Balance>()
+
+     // Initialize 0 balances for everyone
+     group.members.forEach((member) => {
+       balances.set(member.name, {
+         memberId: member.id,
+         memberName: member.name,
+         totalPaid: 0,
+         totalOwed: 0,
+         netBalance: 0,
+       })
+     })
+
+     const userBalance = balances.get(userMemberName)
+
+     directDebts.forEach(debt => {
+        if (debt.from === userMemberName) {
+           // I owe 'debt.to' amount.
+           // Relative to me: 'debt.to' is + (Creditor)
+           const creditor = balances.get(debt.to)
+           if (creditor) creditor.netBalance += debt.amount
+           if (userBalance) userBalance.netBalance -= debt.amount
+        }
+        
+        if (debt.to === userMemberName) {
+           // 'debt.from' owes Me amount.
+           // Relative to me: 'debt.from' is - (Debtor)
+           const debtor = balances.get(debt.from)
+           if (debtor) debtor.netBalance -= debt.amount
+           if (userBalance) userBalance.netBalance += debt.amount
+        }
+     })
+
+     return Array.from(balances.values())
+  }
 }

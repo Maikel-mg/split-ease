@@ -4,17 +4,12 @@ import { useState, useEffect, useCallback } from "react"
 import { useParams, useRouter } from "next/navigation"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Button } from "@/components/ui/button"
-import { ArrowLeft, MoreVertical, Share2, UserPlus, Search, X, Users, Pencil, Archive, Undo } from "lucide-react"
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
+import { ArrowLeft, Search, X } from "lucide-react"
 import { AddExpenseForm } from "@/components/add-expense-form"
 import { ExpenseList } from "@/components/expense-list"
 import { BalanceSummary } from "@/components/balance-summary"
 import { DebtSettlement } from "@/components/debt-settlement"
 import { GroupInfo } from "@/components/group-info"
-import { ShareGroupDialog } from "@/components/share-group-dialog"
-import { AddMemberDialog } from "@/components/add-member-dialog"
-import { ManageMembersDialog } from "@/components/manage-members-dialog"
-import { EditGroupTitleDialog } from "@/components/edit-group-title-dialog"
 import { getGroupService, getExpenseService, getBalanceService, getPaymentService } from "@/lib/services"
 import { useUserIdentity } from "@/lib/hooks/use-user-identity"
 import type { Group } from "@/core/entities/Group"
@@ -22,7 +17,9 @@ import type { Expense } from "@/core/entities/Expense"
 import type { Balance, Debt } from "@/core/entities/Balance"
 import type { Payment } from "@/core/entities/Payment"
 import { Input } from "@/components/ui/input"
-import { archiveGroup, unarchiveGroup } from "@/app/actions/group-actions"
+
+import { GetGroupDetailsUseCase } from "@/core/use-cases/GetGroupDetailsUseCase"
+import { GroupMenu } from "@/components/group-menu"
 
 export default function GroupPage() {
   const params = useParams()
@@ -37,11 +34,7 @@ export default function GroupPage() {
   const [debts, setDebts] = useState<Debt[]>([])
   const [loading, setLoading] = useState(true)
   const [editingExpense, setEditingExpense] = useState<Expense | undefined>(undefined)
-  const [shareDialogOpen, setShareDialogOpen] = useState(false)
-  const [addMemberDialogOpen, setAddMemberDialogOpen] = useState(false)
-  const [manageMembersDialogOpen, setManageMembersDialogOpen] = useState(false)
-  const [editGroupTitleDialogOpen, setEditGroupTitleDialogOpen] = useState(false)
-  const [dropdownOpen, setDropdownOpen] = useState(false)
+
   const [searchQuery, setSearchQuery] = useState("")
   const [searchVisible, setSearchVisible] = useState(false)
   const [activeTab, setActiveTab] = useState("balances")
@@ -52,64 +45,26 @@ export default function GroupPage() {
       const expenseService = getExpenseService()
       const balanceService = getBalanceService()
       const paymentService = getPaymentService()
+      
+      const getGroupDetailsUseCase = new GetGroupDetailsUseCase(
+        groupService,
+        expenseService,
+        balanceService,
+        paymentService
+      )
 
-      const groupData = await groupService.getGroup(groupId)
-      if (!groupData) {
+      const details = await getGroupDetailsUseCase.execute(groupId, userMemberName || undefined)
+      
+      if (!details) {
         router.push("/grupos")
         return
       }
 
-      const expensesData = await expenseService.getExpensesByGroup(groupId)
-      const paymentsData = await paymentService.getPaymentsByGroup(groupId)
-
-      let visibleExpenses: Expense[] = []
-      let visiblePayments: Payment[] = paymentsData
-
-      if (groupData.isPrivate) {
-        if (userMemberName) {
-          const member = groupData.members.find((m) => m.name === userMemberName)
-          if (member) {
-            visibleExpenses = expensesData.filter(
-              (e) => e.paidBy === member.id || e.participants.includes(member.id),
-            )
-            // Only show payments involving the user
-            visiblePayments = paymentsData.filter(
-              (p) => p.from === userMemberName || p.to === userMemberName
-            )
-          }
-        }
-        // If private and no identity yet (or not a member), visibleExpenses/payments remains empty/default?
-        // Actually if no identity, we shouldn't show payments either to be safe.
-        if (!userMemberName) {
-            visiblePayments = []
-        }
-      } else {
-        visibleExpenses = expensesData
-      }
-
-      const balancesData = balanceService.calculateBalances(groupData, visibleExpenses, visiblePayments)
-      
-      let debtsData: any[] = []
-      if (groupData.isPrivate) {
-         // FOR PRIVATE GROUPS: Use Direct Debts and Filter by User
-         // We only want to show debts where the user is involved (Payer or Payee)
-         const allDirectDebts = balanceService.calculateDirectDebts(groupData, visibleExpenses, visiblePayments)
-         
-         if (userMemberName) {
-            debtsData = allDirectDebts.filter(d => d.from === userMemberName || d.to === userMemberName)
-         } else {
-            debtsData = [] // If no identity, show nothing
-         }
-      } else {
-         // FOR PUBLIC GROUPS: Use Greedy Simplification (Standard)
-         debtsData = balanceService.simplifyDebts(balancesData)
-      }
-
-      setGroup(groupData)
-      setExpenses(visibleExpenses)
-      setPayments(visiblePayments)
-      setBalances(balancesData)
-      setDebts(debtsData)
+      setGroup(details.group)
+      setExpenses(details.visibleExpenses)
+      setPayments(details.visiblePayments)
+      setBalances(details.balances)
+      setDebts(details.debts)
     } catch (error) {
       console.error("Error loading data:", error)
     } finally {
@@ -147,22 +102,6 @@ export default function GroupPage() {
     loadData()
   }
 
-  const handleLeaveGroup = () => {
-    router.push("/grupos")
-  }
-
-  const handleShareClick = () => {
-    console.log("[v0] Share clicked")
-    setShareDialogOpen(true)
-    setDropdownOpen(false)
-  }
-
-  const handleAddMemberClick = () => {
-    console.log("[v0] Add member clicked")
-    setAddMemberDialogOpen(true)
-    setDropdownOpen(false)
-  }
-
   const toggleSearch = () => {
     if (searchVisible) {
       setSearchQuery("")
@@ -170,49 +109,11 @@ export default function GroupPage() {
     setSearchVisible(!searchVisible)
   }
 
-  const handleMemberAdded = () => {
-    loadData()
+  const handleLeaveGroup = () => {
+    router.push("/grupos")
   }
 
-  const handleManageMembersClick = () => {
-    setManageMembersDialogOpen(true)
-    setDropdownOpen(false)
-  }
 
-  const handleMemberRemoved = () => {
-    loadData()
-  }
-
-  const handleEditGroupTitleClick = () => {
-    setEditGroupTitleDialogOpen(true)
-  }
-
-  const handleGroupTitleUpdated = () => {
-    loadData()
-    setEditGroupTitleDialogOpen(false)
-  }
-
-  const handleArchiveClick = async () => {
-    if (group) {
-      try {
-        await archiveGroup(group.id)
-        router.push("/grupos")
-      } catch (error) {
-        console.error("Error archiving group:", error)
-      }
-    }
-  }
-
-  const handleUnarchiveClick = async () => {
-    if (group) {
-      try {
-        await unarchiveGroup(group.id)
-        loadData()
-      } catch (error) {
-        console.error("Error unarchiving group:", error)
-      }
-    }
-  }
 
   const filteredExpenses = expenses.filter((expense) => {
     if (!searchQuery.trim()) return true
@@ -267,40 +168,13 @@ export default function GroupPage() {
                 {searchVisible ? <X className="h-5 w-5" /> : <Search className="h-5 w-5" />}
               </Button>
 
-              <DropdownMenu>
-                <DropdownMenuTrigger className="inline-flex items-center justify-center rounded-md text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground h-9 w-9">
-                  <MoreVertical className="h-5 w-5" />
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="end" className="w-48">
-                  <DropdownMenuItem onClick={handleShareClick}>
-                    <Share2 className="h-4 w-4 mr-2" />
-                    Compartir
-                  </DropdownMenuItem>
-                  <DropdownMenuItem onClick={handleAddMemberClick}>
-                    <UserPlus className="h-4 w-4 mr-2" />
-                    Añadir persona
-                  </DropdownMenuItem>
-                  <DropdownMenuItem onClick={handleManageMembersClick}>
-                    <Users className="h-4 w-4 mr-2" />
-                    Gestionar miembros
-                  </DropdownMenuItem>
-                  <DropdownMenuItem onClick={handleEditGroupTitleClick}>
-                    <Pencil className="h-4 w-4 mr-2" />
-                    Editar grupo
-                  </DropdownMenuItem>
-                  {group.archived ? (
-                    <DropdownMenuItem onClick={handleUnarchiveClick}>
-                      <Undo className="h-4 w-4 mr-2" />
-                      Desarchivar
-                    </DropdownMenuItem>
-                  ) : (
-                    <DropdownMenuItem onClick={handleArchiveClick} disabled={!canArchive}>
-                      <Archive className="h-4 w-4 mr-2" />
-                      Archivar
-                    </DropdownMenuItem>
-                  )}
-                </DropdownMenuContent>
-              </DropdownMenu>
+               <GroupMenu 
+                group={group} 
+                balances={balances} 
+                onGroupUpdated={loadData}
+                onMemberAdded={loadData}
+                onMemberRemoved={loadData}
+              />
             </div>
           </div>
 
@@ -376,37 +250,7 @@ export default function GroupPage() {
           </Tabs>
         </div>
       </div>
-      <ShareGroupDialog
-        groupName={group.name}
-        groupCode={group.code}
-        open={shareDialogOpen}
-        onOpenChange={setShareDialogOpen}
-      />
-      {group && (
-        <AddMemberDialog
-          group={group}
-          onMemberAdded={handleMemberAdded}
-          open={addMemberDialogOpen}
-          onOpenChange={setAddMemberDialogOpen}
-        />
-      )}
-      {group && (
-        <ManageMembersDialog
-          open={manageMembersDialogOpen}
-          onOpenChange={setManageMembersDialogOpen}
-          group={group}
-          balances={balances}
-          onMemberRemoved={handleMemberRemoved}
-        />
-      )}
-      {group && (
-        <EditGroupTitleDialog
-          group={group}
-          open={editGroupTitleDialogOpen}
-          onOpenChange={setEditGroupTitleDialogOpen}
-          onGroupUpdated={handleGroupTitleUpdated}
-        />
-      )}
+
     </main>
   )
 }
