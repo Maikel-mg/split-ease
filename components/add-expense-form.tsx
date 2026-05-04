@@ -81,8 +81,8 @@ export function AddExpenseForm({ group, onExpenseAdded, editExpense, onExpenseUp
     }
   }, [editExpense])
 
-  const calculateShare = (memberId: string): number => {
-    const totalAmount = Number.parseFloat(amount) || 0
+const calculateShare = (memberId: string): number => {
+  const totalAmount = Number.parseFloat(amount) || 0
 
     if (splitMode === "equally") {
       const participantCount = participants.length
@@ -163,6 +163,13 @@ export function AddExpenseForm({ group, onExpenseAdded, editExpense, onExpenseUp
     setError("")
     setIsLoading(true)
 
+    const parsedAmount = Number.parseFloat(amount)
+    if (Number.isNaN(parsedAmount) || parsedAmount <= 0) {
+      setError("El importe debe ser mayor que 0")
+      setIsLoading(false)
+      return
+    }
+
     try {
       let imageUrl = editExpense?.imageUrl || null
       if (imageFile) {
@@ -179,7 +186,7 @@ export function AddExpenseForm({ group, onExpenseAdded, editExpense, onExpenseUp
       if (editExpense) {
         const expense = await expenseService.updateExpense(
           editExpense.id,
-          Number.parseFloat(amount),
+          parsedAmount,
           paidBy,
           description,
           participants,
@@ -192,7 +199,7 @@ export function AddExpenseForm({ group, onExpenseAdded, editExpense, onExpenseUp
       } else {
         const expense = await expenseService.createExpense(
           group.id,
-          Number.parseFloat(amount),
+          parsedAmount,
           paidBy,
           description,
           participants,
