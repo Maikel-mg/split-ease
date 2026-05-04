@@ -2,14 +2,26 @@
 
 import { useState } from "react"
 import { useRouter } from "next/navigation"
-import { MoreVertical, Share2, UserPlus, Users, Pencil, Archive, Undo } from "lucide-react"
+import { MoreVertical, Share2, UserPlus, Users, Pencil, Archive, Undo, Copy, Trash2 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog"
 import { ShareGroupDialog } from "@/components/share-group-dialog"
 import { AddMemberDialog } from "@/components/add-member-dialog"
 import { ManageMembersDialog } from "@/components/manage-members-dialog"
 import { EditGroupTitleDialog } from "@/components/edit-group-title-dialog"
-import { archiveGroup, unarchiveGroup } from "@/app/actions/group-actions"
+import { CopyGroupDialog } from "@/components/copy-group-dialog"
+import { archiveGroup, unarchiveGroup, deleteGroup } from "@/app/actions/group-actions"
 import type { Group } from "@/core/entities/Group"
 import type { Balance } from "@/core/entities/Balance"
 
@@ -33,6 +45,8 @@ export function GroupMenu({
   const [addMemberDialogOpen, setAddMemberDialogOpen] = useState(false)
   const [manageMembersDialogOpen, setManageMembersDialogOpen] = useState(false)
   const [editGroupTitleDialogOpen, setEditGroupTitleDialogOpen] = useState(false)
+  const [copyGroupDialogOpen, setCopyGroupDialogOpen] = useState(false)
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
   const [dropdownOpen, setDropdownOpen] = useState(false)
 
   const canArchive = balances.every((b) => Math.abs(b.netBalance) < 0.01)
@@ -57,6 +71,16 @@ export function GroupMenu({
     setDropdownOpen(false)
   }
 
+  const handleCopyGroupClick = () => {
+    setCopyGroupDialogOpen(true)
+    setDropdownOpen(false)
+  }
+
+  const handleGroupCopied = (newGroupId: string) => {
+    onGroupUpdated()
+    setCopyGroupDialogOpen(false)
+  }
+
   const handleGroupTitleUpdated = () => {
     onGroupUpdated()
     setEditGroupTitleDialogOpen(false)
@@ -73,16 +97,27 @@ export function GroupMenu({
     }
   }
 
-  const handleUnarchiveClick = async () => {
-    if (group) {
-      try {
-        await unarchiveGroup(group.id)
-        onGroupUpdated()
-      } catch (error) {
-        console.error("Error unarchiving group:", error)
-      }
+const handleUnarchiveClick = async () => {
+  if (group) {
+    try {
+      await unarchiveGroup(group.id)
+      onGroupUpdated()
+    } catch (error) {
+      console.error("Error unarchiving group:", error)
     }
   }
+}
+
+const handleDeleteClick = async () => {
+  if (group) {
+    try {
+      await deleteGroup(group.id)
+      router.push("/grupos")
+    } catch (error) {
+      console.error("Error deleting group:", error)
+    }
+  }
+}
 
   return (
     <>
@@ -105,21 +140,49 @@ export function GroupMenu({
             <Users className="h-4 w-4 mr-2" />
             Gestionar miembros
           </DropdownMenuItem>
-          <DropdownMenuItem onClick={handleEditGroupTitleClick}>
-            <Pencil className="h-4 w-4 mr-2" />
-            Editar grupo
-          </DropdownMenuItem>
-          {group.archived ? (
-            <DropdownMenuItem onClick={handleUnarchiveClick}>
-              <Undo className="h-4 w-4 mr-2" />
-              Desarchivar
-            </DropdownMenuItem>
-          ) : (
-            <DropdownMenuItem onClick={handleArchiveClick} disabled={!canArchive}>
-              <Archive className="h-4 w-4 mr-2" />
-              Archivar
-            </DropdownMenuItem>
-          )}
+<DropdownMenuItem onClick={handleEditGroupTitleClick}>
+      <Pencil className="h-4 w-4 mr-2" />
+      Editar grupo
+    </DropdownMenuItem>
+    <DropdownMenuItem onClick={handleCopyGroupClick}>
+      <Copy className="h-4 w-4 mr-2" />
+      Copiar grupo
+    </DropdownMenuItem>
+{group.archived ? (
+  <>
+    <DropdownMenuItem onClick={handleUnarchiveClick}>
+      <Undo className="h-4 w-4 mr-2" />
+      Desarchivar
+    </DropdownMenuItem>
+    <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+      <AlertDialogTrigger asChild>
+        <DropdownMenuItem onSelect={(e) => { e.preventDefault(); setDeleteDialogOpen(true); setDropdownOpen(false); }}>
+          <Trash2 className="h-4 w-4 mr-2" />
+          Eliminar grupo
+        </DropdownMenuItem>
+      </AlertDialogTrigger>
+      <AlertDialogContent>
+        <AlertDialogHeader>
+          <AlertDialogTitle>¿Estás seguro de que quieres eliminar el grupo?</AlertDialogTitle>
+          <AlertDialogDescription>
+            Esta acción no se puede deshacer. Se eliminará el grupo "{group.name}" y todos sus datos asociados.
+          </AlertDialogDescription>
+        </AlertDialogHeader>
+        <AlertDialogFooter>
+          <AlertDialogCancel>Cancelar</AlertDialogCancel>
+          <AlertDialogAction onClick={handleDeleteClick} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+            Eliminar
+          </AlertDialogAction>
+        </AlertDialogFooter>
+      </AlertDialogContent>
+    </AlertDialog>
+  </>
+) : (
+  <DropdownMenuItem onClick={handleArchiveClick} disabled={!canArchive}>
+    <Archive className="h-4 w-4 mr-2" />
+    Archivar
+  </DropdownMenuItem>
+)}
         </DropdownMenuContent>
       </DropdownMenu>
 
@@ -145,12 +208,19 @@ export function GroupMenu({
         onMemberRemoved={onMemberRemoved}
       />
       
-      <EditGroupTitleDialog
-        group={group}
-        open={editGroupTitleDialogOpen}
-        onOpenChange={setEditGroupTitleDialogOpen}
-        onGroupUpdated={handleGroupTitleUpdated}
-      />
-    </>
-  )
+<EditGroupTitleDialog
+      group={group}
+      open={editGroupTitleDialogOpen}
+      onOpenChange={setEditGroupTitleDialogOpen}
+      onGroupUpdated={handleGroupTitleUpdated}
+    />
+
+    <CopyGroupDialog
+      sourceGroup={group}
+      open={copyGroupDialogOpen}
+      onOpenChange={setCopyGroupDialogOpen}
+      onGroupCopied={handleGroupCopied}
+    />
+  </>
+)
 }

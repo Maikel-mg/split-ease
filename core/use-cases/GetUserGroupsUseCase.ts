@@ -1,7 +1,7 @@
 import type { GroupRepository } from "@/core/ports/GroupRepository"
 import type { ExpenseRepository } from "@/core/ports/ExpenseRepository"
 import type { PaymentRepository } from "@/core/ports/PaymentRepository"
-import type { BalanceService } from "@/domain/services/BalanceService"
+import type { BalanceService } from "@/core/services/BalanceService"
 
 export interface UserGroupIdentity {
   groupId: string

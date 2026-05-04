@@ -2,7 +2,7 @@
 
 import { createClient } from "@supabase/supabase-js"
 import { revalidatePath } from "next/cache"
-import { BalanceService } from "@/domain/services/BalanceService"
+import { BalanceService } from "@/core/services/BalanceService"
 import type { Group } from "@/core/entities/Group"
 import type { Expense } from "@/core/entities/Expense"
 import type { Payment } from "@/core/entities/Payment"
@@ -199,7 +199,11 @@ export async function getUserGroups(userId: string) {
           members: (members || []).map((m) => ({
             id: m.id,
             name: m.member_name,
+            joinedAt: new Date(m.created_at || Date.now()),
           })),
+          createdAt: new Date(group.created_at || Date.now()),
+          archived: group.archived,
+          isPrivate: group.is_private || false,
         }
 
         const expenses: Expense[] = (expensesData || []).map((e) => ({
@@ -210,6 +214,8 @@ export async function getUserGroups(userId: string) {
           paidBy: e.paidBy,
           participants: e.participants as string[],
           date: new Date(e.date),
+          splitMode: e.split_mode || "equally",
+          createdAt: new Date(e.created_at || Date.now()),
         }))
 
         const payments: Payment[] = (paymentsData || []).map((p) => ({
@@ -219,6 +225,7 @@ export async function getUserGroups(userId: string) {
           to: p.to,
           amount: p.amount,
           date: new Date(p.date),
+          registeredAt: new Date(p.created_at || Date.now()),
         }))
 
         // Calculate balances using BalanceService
@@ -294,5 +301,93 @@ export async function unarchiveGroup(groupId: string) {
   } catch (error) {
     console.error("[v0] Error in unarchiveGroup:", error)
     throw error
+  }
+}
+
+export async function deleteGroup(groupId: string) {
+  try {
+    const supabase = createServiceRoleClient()
+
+    // First delete all related records (expenses, payments, members)
+    const { error: expensesError } = await supabase.from("expenses").delete().eq("group_id", groupId)
+    if (expensesError) {
+      console.error("[v0] Error deleting expenses:", expensesError)
+    }
+
+    const { error: paymentsError } = await supabase.from("payments").delete().eq("group_id", groupId)
+    if (paymentsError) {
+      console.error("[v0] Error deleting payments:", paymentsError)
+    }
+
+    const { error: membersError } = await supabase.from("group_members").delete().eq("group_id", groupId)
+    if (membersError) {
+      console.error("[v0] Error deleting members:", membersError)
+    }
+
+    // Finally delete the group
+    const { error } = await supabase.from("groups").delete().eq("id", groupId)
+
+    if (error) {
+      console.error("[v0] Error deleting group:", error)
+      throw new Error("Error al eliminar el grupo")
+    }
+
+    revalidatePath("/grupos")
+
+    return { success: true }
+  } catch (error) {
+    console.error("[v0] Error in deleteGroup:", error)
+    throw error
+  }
+}
+
+export async function copyGroup(sourceGroupId: string, newGroupName: string) {
+  try {
+    const supabase = createServiceRoleClient()
+
+    // Fetch the source group with its members
+    const { data: sourceGroup, error: groupError } = await supabase
+      .from("groups")
+      .select("*")
+      .eq("id", sourceGroupId)
+      .single()
+
+    if (groupError || !sourceGroup) {
+      console.error("[v0] Error fetching source group:", groupError)
+      throw new Error("Grupo no encontrado")
+    }
+
+    // Fetch members of the source group
+    const { data: members, error: membersError } = await supabase
+      .from("group_members")
+      .select("member_name")
+      .eq("group_id", sourceGroupId)
+
+    if (membersError) {
+      console.error("[v0] Error fetching members:", membersError)
+      throw new Error("Error al obtener los miembros del grupo")
+    }
+
+    if (!members || members.length === 0) {
+      throw new Error("El grupo no tiene miembros para copiar")
+    }
+
+    // Extract member names
+    const memberNames = members.map((m) => m.member_name)
+
+    // Use the same user_id as the source group (or null if not set)
+    const ownerUserId = sourceGroup.user_id || null
+
+    console.log("[v0] Copying group:", sourceGroup.name, "with members:", memberNames)
+
+    // Create the new group with the same members using createGroupWithMembers
+    const result = await createGroupWithMembers(ownerUserId, newGroupName, memberNames)
+
+    console.log("[v0] Group copied successfully:", result)
+
+    return { success: true, newGroupId: result.groupId }
+  } catch (error: any) {
+    console.error("[v0] Error in copyGroup:", error)
+    throw new Error(error.message || "Error al copiar el grupo")
   }
 }

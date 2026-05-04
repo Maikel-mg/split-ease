@@ -10,7 +10,6 @@ import { ExpenseList } from "@/components/expense-list"
 import { BalanceSummary } from "@/components/balance-summary"
 import { DebtSettlement } from "@/components/debt-settlement"
 import { GroupInfo } from "@/components/group-info"
-import { getGroupService, getExpenseService, getBalanceService, getPaymentService } from "@/lib/services"
 import { useUserIdentity } from "@/lib/hooks/use-user-identity"
 import type { Group } from "@/core/entities/Group"
 import type { Expense } from "@/core/entities/Expense"
@@ -18,8 +17,8 @@ import type { Balance, Debt } from "@/core/entities/Balance"
 import type { Payment } from "@/core/entities/Payment"
 import { Input } from "@/components/ui/input"
 
-import { GetGroupDetailsUseCase } from "@/core/use-cases/GetGroupDetailsUseCase"
 import { GroupMenu } from "@/components/group-menu"
+import { useGroupDetails } from "@/lib/hooks/use-group-details"
 
 export default function GroupPage() {
   const params = useParams()
@@ -27,54 +26,25 @@ export default function GroupPage() {
   const groupId = params.id as string
   const { userMemberName } = useUserIdentity(groupId)
 
-  const [group, setGroup] = useState<Group | null>(null)
-  const [expenses, setExpenses] = useState<Expense[]>([])
-  const [payments, setPayments] = useState<Payment[]>([])
-  const [balances, setBalances] = useState<Balance[]>([])
-  const [debts, setDebts] = useState<Debt[]>([])
-  const [loading, setLoading] = useState(true)
-  const [editingExpense, setEditingExpense] = useState<Expense | undefined>(undefined)
+  const { 
+    group, 
+    expenses, 
+    payments, 
+    balances, 
+    debts, 
+    loading, 
+    refresh: loadData,
+    setGroup,
+    setExpenses,
+    setPayments,
+    setBalances,
+    setDebts
+  } = useGroupDetails(groupId, userMemberName)
 
   const [searchQuery, setSearchQuery] = useState("")
   const [searchVisible, setSearchVisible] = useState(false)
   const [activeTab, setActiveTab] = useState("balances")
-
-  const loadData = useCallback(async () => {
-    try {
-      const groupService = getGroupService()
-      const expenseService = getExpenseService()
-      const balanceService = getBalanceService()
-      const paymentService = getPaymentService()
-      
-      const getGroupDetailsUseCase = new GetGroupDetailsUseCase(
-        groupService,
-        expenseService,
-        balanceService,
-        paymentService
-      )
-
-      const details = await getGroupDetailsUseCase.execute(groupId, userMemberName || undefined)
-      
-      if (!details) {
-        router.push("/grupos")
-        return
-      }
-
-      setGroup(details.group)
-      setExpenses(details.visibleExpenses)
-      setPayments(details.visiblePayments)
-      setBalances(details.balances)
-      setDebts(details.debts)
-    } catch (error) {
-      console.error("Error loading data:", error)
-    } finally {
-      setLoading(false)
-    }
-  }, [groupId, userMemberName, router])
-
-  useEffect(() => {
-    loadData()
-  }, [loadData])
+  const [editingExpense, setEditingExpense] = useState<Expense | undefined>(undefined)
 
   useEffect(() => {
     setSearchQuery("")

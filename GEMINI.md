@@ -18,10 +18,9 @@ The project follows **Clean Architecture** principles to separate concerns:
 
 -   **`core/` (Core Layer):** Contains the business logic, rules, and application orchestration.
     -   `entities/`: TypeScript interfaces defining domain objects (e.g., `Expense`, `Group`). Pure data structures with basic validation.
-    -   `ports/`: Interfaces defining the contract for data access (Repository pattern).
-    -   `use-cases/` (**NEW**): Application Services/Use Cases. Orchestrate data flow and logic to fulfill a specific user intent (e.g., `GetGroupDashboard`, `CreateGroupWithMembers`). They coordinate between Repositories and Domain Services.
--   **`domain/` (Domain Layer):**
     -   `services/`: Pure Domain Services containing business rules and invariants (e.g., `BalanceService` for calculating debts, `GroupService` for group validation logic). They should NOT orchestrate complex data fetching.
+    -   `ports/`: Interfaces defining the contract for data access (Repository pattern).
+    -   `use-cases/`: Application Services/Use Cases. Orchestrate data flow and logic to fulfill a specific user intent (e.g., `GetGroupDashboard`, `CreateGroupWithMembers`). They coordinate between Repositories and Domain Services.
 -   **`data/` (Data Layer):** Implements the interface adapters.
     -   `repositories/`: Concrete implementations of ports using Supabase (e.g., `SupabaseExpenseRepository`). Handles mapping between DB snake_case and Domain camelCase.
 -   **`app/` & `components/` (Presentation Layer):** Next.js App Router and React components.
