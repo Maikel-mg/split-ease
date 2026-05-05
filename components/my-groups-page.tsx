@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react"
 import { useRouter } from "next/navigation"
-import { Search, Plus, MoreVertical } from "lucide-react"
+import { Search, Plus, MoreVertical, Archive } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { getUserGroupsFromIdentities } from "@/app/actions/group-actions"
@@ -156,20 +156,34 @@ export default function MyGroupsPage() {
                 <button
                   key={group.id}
                   onClick={() => router.push(`/group/${group.id}`)}
-                  className="w-full bg-white border rounded-lg p-4 hover:shadow-md transition-shadow text-left"
+                  className={`w-full bg-white border rounded-lg p-4 hover:shadow-md transition-all text-left ${
+                    group.archived ? "border-amber-200 bg-amber-50/50" : ""
+                  }`}
                 >
                   <div className="flex items-center gap-4">
                     {/* Group Avatar */}
                     <div
-                      className={`w-14 h-14 rounded-full ${getGroupColor(index)} flex items-center justify-center flex-shrink-0`}
+                      className={`w-14 h-14 rounded-full ${getGroupColor(index)} flex items-center justify-center flex-shrink-0 ${
+                        group.archived ? "opacity-60" : ""
+                      }`}
                     >
                       <span className="text-white font-semibold text-lg">{getGroupInitials(group.name)}</span>
                     </div>
 
                     {/* Group Info */}
                     <div className="flex-1 min-w-0">
-                      <h3 className="font-semibold text-base mb-1 truncate">{group.name}</h3>
-                      <p className="text-sm text-muted-foreground">
+                      <div className="flex items-center gap-2">
+                        <h3 className={`font-semibold text-base mb-1 truncate ${group.archived ? "text-muted-foreground" : ""}`}>
+                          {group.name}
+                        </h3>
+                        {group.archived && (
+                          <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-amber-100 text-amber-700 text-xs font-medium rounded-full">
+                            <Archive className="w-3 h-3" />
+                            Archivado
+                          </span>
+                        )}
+                      </div>
+                      <p className={`text-sm ${group.archived ? "text-muted-foreground/70" : "text-muted-foreground"}`}>
                         {group.memberCount} {group.memberCount === 1 ? "miembro" : "miembros"}, Total:{" "}
                         {group.totalExpenses.toFixed(2)}€
                       </p>
@@ -177,7 +191,9 @@ export default function MyGroupsPage() {
 
                     {/* Balance */}
                     <div className="text-right flex-shrink-0">
-                      <p className={`text-sm font-medium ${balance.color}`}>{balance.text}</p>
+                      <p className={`text-sm font-medium ${group.archived ? "text-muted-foreground/70" : balance.color}`}>
+                        {group.archived ? "—" : balance.text}
+                      </p>
                     </div>
                   </div>
                 </button>
