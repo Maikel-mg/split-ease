@@ -2,9 +2,10 @@
 
 import { useEffect, useState } from "react"
 import { useRouter } from "next/navigation"
-import { Search, Plus, MoreVertical } from "lucide-react"
+import { Search, Plus, MoreVertical, Archive } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
+import ThemeToggle from "@/components/theme-toggle"
 import { getUserGroupsFromIdentities } from "@/app/actions/group-actions"
 import { getMyGroupIds, getUserMemberName } from "@/lib/hooks/use-user-identity"
 import { Checkbox } from "@/components/ui/checkbox"
@@ -116,13 +117,16 @@ export default function MyGroupsPage() {
   return (
     <div className="min-h-screen bg-background">
       {/* Header */}
-      <div className="bg-white border-b sticky top-0 z-10">
+      <div className="bg-card border-b sticky top-0 z-10">
         <div className="max-w-2xl mx-auto px-4 py-4">
           <div className="flex items-center justify-between mb-4">
-            <h1 className="text-2xl font-bold">Mis Grupos</h1>
-            <Button variant="ghost" size="icon" onClick={() => setSearchQuery("")}>
-              <Search className="h-5 w-5" />
-            </Button>
+            <h1 className="text-2xl font-bold text-foreground">Mis Grupos</h1>
+            <div className="flex items-center gap-2">
+              <ThemeToggle />
+              <Button variant="ghost" size="icon" onClick={() => setSearchQuery("")}>
+                <Search className="h-5 w-5" />
+              </Button>
+            </div>
           </div>
           <div className="flex items-center justify-between">
 
@@ -131,7 +135,7 @@ export default function MyGroupsPage() {
             placeholder="Buscar grupos..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-lg border-gray-300"
+            className="w-lg border-input dark:border-slate-600 bg-background dark:bg-slate-800/50"
           />
           <div className="flex items-center space-x-1 jsustify-center">
             <Checkbox id="show-archived" className='border-emearald-300' checked={showArchived} onCheckedChange={(checked) => setShowArchived(Boolean(checked))} />
@@ -156,20 +160,34 @@ export default function MyGroupsPage() {
                 <button
                   key={group.id}
                   onClick={() => router.push(`/group/${group.id}`)}
-                  className="w-full bg-white border rounded-lg p-4 hover:shadow-md transition-shadow text-left"
+                  className={`w-full bg-card border rounded-lg p-4 hover:shadow-md transition-all text-left ${
+                    group.archived ? "border-amber-200 dark:border-amber-800 dark:bg-amber-950/30" : ""
+                  }`}
                 >
                   <div className="flex items-center gap-4">
                     {/* Group Avatar */}
                     <div
-                      className={`w-14 h-14 rounded-full ${getGroupColor(index)} flex items-center justify-center flex-shrink-0`}
+                      className={`w-14 h-14 rounded-full ${getGroupColor(index)} flex items-center justify-center flex-shrink-0 ${
+                        group.archived ? "opacity-60" : ""
+                      }`}
                     >
                       <span className="text-white font-semibold text-lg">{getGroupInitials(group.name)}</span>
                     </div>
 
                     {/* Group Info */}
                     <div className="flex-1 min-w-0">
-                      <h3 className="font-semibold text-base mb-1 truncate">{group.name}</h3>
-                      <p className="text-sm text-muted-foreground">
+                      <div className="flex items-center gap-2">
+                        <h3 className={`font-semibold text-base mb-1 truncate text-foreground ${group.archived ? "text-muted-foreground" : ""}`}>
+                          {group.name}
+                        </h3>
+                        {group.archived && (
+                          <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-amber-100 text-amber-700 text-xs font-medium rounded-full dark:bg-amber-900 dark:text-amber-300">
+                            <Archive className="w-3 h-3" />
+                            Archivado
+                          </span>
+                        )}
+                      </div>
+                      <p className={`text-sm text-muted-foreground ${group.archived ? "text-muted-foreground/70" : ""}`}>
                         {group.memberCount} {group.memberCount === 1 ? "miembro" : "miembros"}, Total:{" "}
                         {group.totalExpenses.toFixed(2)}€
                       </p>
@@ -177,7 +195,9 @@ export default function MyGroupsPage() {
 
                     {/* Balance */}
                     <div className="text-right flex-shrink-0">
-                      <p className={`text-sm font-medium ${balance.color}`}>{balance.text}</p>
+                      <p className={`text-sm font-medium ${group.archived ? "text-muted-foreground/70" : balance.color}`}>
+                        {group.archived ? "—" : balance.text}
+                      </p>
                     </div>
                   </div>
                 </button>
@@ -190,7 +210,7 @@ export default function MyGroupsPage() {
       {/* Floating Action Button */}
       <button
         onClick={() => router.push("/welcome")}
-        className="fixed bottom-6 right-6 w-14 h-14 bg-[#10b981] hover:bg-[#059669] text-white rounded-full shadow-lg flex items-center justify-center transition-colors"
+        className="fixed bottom-6 right-6 w-14 h-14 bg-primary hover:bg-primary/90 text-primary-foreground rounded-full shadow-lg flex items-center justify-center transition-colors"
       >
         <Plus className="h-6 w-6" />
       </button>

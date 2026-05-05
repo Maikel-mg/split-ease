@@ -5,6 +5,8 @@ import { GeistMono } from "geist/font/mono"
 import { Analytics } from "@vercel/analytics/next"
 import "./globals.css"
 import { Suspense } from "react"
+import { ThemeProvider } from "@/components/theme-provider"
+import ThemeColorUpdater from "@/components/theme-color-updater"
 
 export const metadata: Metadata = {
   title: "Gastos Compartidos - Gestiona gastos grupales",
@@ -34,7 +36,7 @@ export default function RootLayout({
   children: React.ReactNode
 }>) {
   return (
-    <html lang="es" className={`${GeistSans.variable} ${GeistMono.variable}`}>
+    <html lang="es" className={`${GeistSans.variable} ${GeistMono.variable}`} suppressHydrationWarning>
       <head>
         <link rel="manifest" href="/manifest.json" />
         <link rel="apple-touch-icon" href="/icon-192.jpg" />
@@ -45,7 +47,10 @@ export default function RootLayout({
         <meta name="theme-color" content="#0070f3" />
       </head>
       <body className="font-sans">
-        <Suspense fallback={<div>Loading...</div>}>{children}</Suspense>
+        <ThemeProvider attribute="class" defaultTheme="system" enableSystem={true} storageKey="theme">
+          <ThemeColorUpdater />
+          <Suspense fallback={<div>Loading...</div>}>{children}</Suspense>
+        </ThemeProvider>
         <Analytics />
       </body>
     </html>
