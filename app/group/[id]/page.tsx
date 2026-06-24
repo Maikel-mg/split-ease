@@ -141,6 +141,7 @@ export default function GroupPage() {
                <GroupMenu 
                 group={group} 
                 balances={balances} 
+                debts={debts}
                 onGroupUpdated={loadData}
                 onMemberAdded={loadData}
                 onMemberRemoved={loadData}

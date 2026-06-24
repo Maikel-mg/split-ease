@@ -23,11 +23,14 @@ import { EditGroupTitleDialog } from "@/components/edit-group-title-dialog"
 import { CopyGroupDialog } from "@/components/copy-group-dialog"
 import { archiveGroup, unarchiveGroup, deleteGroup } from "@/app/actions/group-actions"
 import type { Group } from "@/core/entities/Group"
-import type { Balance } from "@/core/entities/Balance"
+import type { Balance, Debt } from "@/core/entities/Balance"
+import { useToast } from "@/hooks/use-toast"
+import { formatDebtsForSharing } from "@/lib/share-debts"
 
 interface GroupMenuProps {
   group: Group
   balances: Balance[]
+  debts: Debt[]
   onGroupUpdated: () => void
   onMemberAdded: () => void
   onMemberRemoved: () => void
@@ -36,11 +39,13 @@ interface GroupMenuProps {
 export function GroupMenu({ 
   group, 
   balances, 
+  debts,
   onGroupUpdated, 
   onMemberAdded, 
   onMemberRemoved 
 }: GroupMenuProps) {
   const router = useRouter()
+  const { toast } = useToast()
   const [shareDialogOpen, setShareDialogOpen] = useState(false)
   const [addMemberDialogOpen, setAddMemberDialogOpen] = useState(false)
   const [manageMembersDialogOpen, setManageMembersDialogOpen] = useState(false)
@@ -119,6 +124,24 @@ const handleDeleteClick = async () => {
   }
 }
 
+  const handleShareDebtsClick = async () => {
+    setDropdownOpen(false)
+    const text = formatDebtsForSharing(debts)
+    if (!text) return
+
+    try {
+      if (navigator.share) {
+        await navigator.share({ text })
+        toast({ title: "Deudas compartidas" })
+      } else {
+        await navigator.clipboard.writeText(text)
+        toast({ title: "Copiado al portapapeles" })
+      }
+    } catch {
+      // User cancelled share — do nothing
+    }
+  }
+
   return (
     <>
       <DropdownMenu open={dropdownOpen} onOpenChange={setDropdownOpen}>
@@ -132,6 +155,12 @@ const handleDeleteClick = async () => {
             <Share2 className="h-4 w-4 mr-2" />
             Compartir
           </DropdownMenuItem>
+          {debts.length > 0 && (
+            <DropdownMenuItem onClick={handleShareDebtsClick}>
+              <Share2 className="h-4 w-4 mr-2" />
+              Compartir deudas
+            </DropdownMenuItem>
+          )}
           <DropdownMenuItem onClick={handleAddMemberClick}>
             <UserPlus className="h-4 w-4 mr-2" />
             Añadir persona
