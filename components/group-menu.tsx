@@ -2,7 +2,7 @@
 
 import { useState } from "react"
 import { useRouter } from "next/navigation"
-import { MoreVertical, Share2, UserPlus, Users, Pencil, Archive, Undo, Copy, Trash2 } from "lucide-react"
+import { MoreVertical, Share2, UserPlus, Users, Pencil, Archive, Undo, Copy, Trash2, HelpCircle } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 import {
@@ -26,6 +26,7 @@ import type { Group } from "@/core/entities/Group"
 import type { Balance, Debt } from "@/core/entities/Balance"
 import { useToast } from "@/hooks/use-toast"
 import { formatDebtsForSharing } from "@/lib/share-debts"
+import { requestTour } from "@/lib/tour/tour-runtime"
 
 interface GroupMenuProps {
   group: Group
@@ -79,6 +80,11 @@ export function GroupMenu({
   const handleCopyGroupClick = () => {
     setCopyGroupDialogOpen(true)
     setDropdownOpen(false)
+  }
+
+  const handleTourClick = () => {
+    setDropdownOpen(false)
+    requestTour("group")
   }
 
   const handleGroupCopied = (newGroupId: string) => {
@@ -146,11 +152,15 @@ const handleDeleteClick = async () => {
     <>
       <DropdownMenu open={dropdownOpen} onOpenChange={setDropdownOpen}>
         <DropdownMenuTrigger asChild>
-          <Button variant="ghost" size="icon" className="h-9 w-9">
+          <Button data-tour="group-menu" variant="ghost" size="icon" className="h-9 w-9">
             <MoreVertical className="h-5 w-5" />
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end" className="w-48">
+          <DropdownMenuItem onClick={handleTourClick}>
+            <HelpCircle className="h-4 w-4 mr-2" />
+            Ver tour
+          </DropdownMenuItem>
           <DropdownMenuItem onClick={handleShareClick}>
             <Share2 className="h-4 w-4 mr-2" />
             Compartir

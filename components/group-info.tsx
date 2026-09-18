@@ -8,7 +8,7 @@ interface GroupInfoProps {
 
 export function GroupInfo({ group }: GroupInfoProps) {
   return (
-    <div>
+    <div data-tour="group-info">
       <h1 className="font-semibold text-center text-lg truncate">{group.name}</h1>
     </div>
   )
