@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useMemo } from "react"
 import { useParams, useRouter } from "next/navigation"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Button } from "@/components/ui/button"
@@ -22,6 +22,8 @@ import type { Payment } from "@/core/entities/Payment"
 import { Input } from "@/components/ui/input"
 
 import { GroupMenu } from "@/components/group-menu"
+import { AppTour } from "@/components/app-tour"
+import { getGroupTour } from "@/lib/tour/tour-content"
 import { useGroupDetails } from "@/lib/hooks/use-group-details"
 import { useGroupValidation } from "@/lib/hooks/use-group-validation"
 
@@ -136,6 +138,8 @@ export default function GroupPage() {
 
   const canArchive = balances.every((b) => Math.abs(b.netBalance) < 0.01)
 
+  const groupTour = useMemo(() => getGroupTour(!!group?.isPrivate), [group?.isPrivate])
+
   if (loading) {
     return (
       <main className="min-h-screen bg-background p-4 md:p-8">
@@ -221,22 +225,22 @@ export default function GroupPage() {
           <Tabs value={activeTab} className="w-full" onValueChange={setSelectedTab}>
             <TabsList className={`grid w-full ${showValidation ? "grid-cols-5" : "grid-cols-3"} h-11`}>
               {showValidation && (
-                <TabsTrigger value="status" className={tabTriggerClass}>
+                <TabsTrigger value="status" data-tour="tab-status" className={tabTriggerClass}>
                   Mi estado
                 </TabsTrigger>
               )}
-              <TabsTrigger value="balances" className={tabTriggerClass}>
+              <TabsTrigger value="balances" data-tour="tab-balances" className={tabTriggerClass}>
                 Saldos
               </TabsTrigger>
-              <TabsTrigger value="expenses" className={tabTriggerClass}>
+              <TabsTrigger value="expenses" data-tour="tab-expenses" className={tabTriggerClass}>
                 Gastos
               </TabsTrigger>
               {showValidation && (
-                <TabsTrigger value="validation" className={tabTriggerClass}>
+                <TabsTrigger value="validation" data-tour="tab-validation" className={tabTriggerClass}>
                   Validación
                 </TabsTrigger>
               )}
-              <TabsTrigger value="settlement" className={tabTriggerClass}>
+              <TabsTrigger value="settlement" data-tour="tab-settlement" className={tabTriggerClass}>
                 Saldar
               </TabsTrigger>
             </TabsList>
@@ -296,6 +300,7 @@ export default function GroupPage() {
         </div>
       </div>
 
+      <AppTour id="group" steps={groupTour} />
     </main>
   )
 }
