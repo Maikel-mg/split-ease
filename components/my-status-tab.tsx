@@ -4,7 +4,6 @@ import { useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { MemberExpensesDialog } from "@/components/member-expenses-dialog"
-import { ValidationList } from "@/components/validation-list"
 import { AlertCircle, CheckCircle2, Loader2, RotateCcw } from "lucide-react"
 import type { Group } from "@/core/entities/Group"
 import type { Expense } from "@/core/entities/Expense"
@@ -166,8 +165,6 @@ export function MyStatusTab({
           )}
         </CardContent>
       </Card>
-
-      <ValidationList group={group} state={validationState} />
 
       <MemberExpensesDialog
         open={detailsOpen}

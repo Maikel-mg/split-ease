@@ -12,6 +12,7 @@ import { DebtSettlement } from "@/components/debt-settlement"
 import { DanglingPaymentsBanner } from "@/components/dangling-payments-banner"
 import { GroupInfo } from "@/components/group-info"
 import { MyStatusTab } from "@/components/my-status-tab"
+import { ValidationList } from "@/components/validation-list"
 import { ValidationProgress } from "@/components/validation-progress"
 import { useUserIdentity } from "@/lib/hooks/use-user-identity"
 import type { Group } from "@/core/entities/Group"
@@ -58,6 +59,9 @@ export default function GroupPage() {
   // group opens on "Mi estado" and a private one on "Saldos".
   const showValidation = !!group && !group.isPrivate
   const activeTab = selectedTab ?? (showValidation ? "status" : "balances")
+
+  // Five tabs need a tighter label than three.
+  const tabTriggerClass = showValidation ? "text-xs px-1" : "text-sm"
 
   useEffect(() => {
     setSearchQuery("")
@@ -215,19 +219,24 @@ export default function GroupPage() {
           />
 
           <Tabs value={activeTab} className="w-full" onValueChange={setSelectedTab}>
-            <TabsList className={`grid w-full ${showValidation ? "grid-cols-4" : "grid-cols-3"} h-11`}>
+            <TabsList className={`grid w-full ${showValidation ? "grid-cols-5" : "grid-cols-3"} h-11`}>
               {showValidation && (
-                <TabsTrigger value="status" className="text-sm">
-                  Mi estado
-                </TabsTrigger>
+                <>
+                  <TabsTrigger value="status" className={tabTriggerClass}>
+                    Mi estado
+                  </TabsTrigger>
+                  <TabsTrigger value="validation" className={tabTriggerClass}>
+                    Validación
+                  </TabsTrigger>
+                </>
               )}
-              <TabsTrigger value="balances" className="text-sm">
+              <TabsTrigger value="balances" className={tabTriggerClass}>
                 Saldos
               </TabsTrigger>
-              <TabsTrigger value="expenses" className="text-sm">
+              <TabsTrigger value="expenses" className={tabTriggerClass}>
                 Gastos
               </TabsTrigger>
-              <TabsTrigger value="settlement" className="text-sm">
+              <TabsTrigger value="settlement" className={tabTriggerClass}>
                 Saldar
               </TabsTrigger>
             </TabsList>
@@ -248,6 +257,12 @@ export default function GroupPage() {
                   onValidate={handleValidate}
                   onRetire={handleRetire}
                 />
+              </TabsContent>
+            )}
+
+            {showValidation && validationState && (
+              <TabsContent value="validation" className="mt-4">
+                <ValidationList group={group} state={validationState} />
               </TabsContent>
             )}
 

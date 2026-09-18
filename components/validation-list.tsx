@@ -12,18 +12,26 @@ interface ValidationListProps {
 // Names live here and only here, inside a scrollable box with the pending ones
 // on top, so fifteen members are a list and not a broken layout.
 export function ValidationList({ group, state }: ValidationListProps) {
-  if (!state.hasExpenses) return null
+  if (!state.hasExpenses) {
+    return (
+      <p className="text-sm text-muted-foreground text-center py-6">
+        Todavía no hay gastos que validar.
+      </p>
+    )
+  }
 
   const nameOf = (memberId: string) =>
     group.members.find((m) => m.id === memberId)?.name || "Desconocido"
 
   return (
     <div className="space-y-3">
-      <h3 className="font-semibold text-sm text-muted-foreground">
-        Validación ({state.validatedCount}/{state.totalEligible})
-      </h3>
+      <p className="text-sm text-muted-foreground">
+        {state.isComplete
+          ? "Todos los miembros han validado sus gastos y pagos."
+          : `Faltan ${state.pendingMemberIds.length} de ${state.totalEligible} por validar.`}
+      </p>
 
-      <div className="max-h-64 overflow-y-auto space-y-2 pr-1">
+      <div className="max-h-[60vh] overflow-y-auto space-y-2 pr-1">
         {state.pendingMemberIds.map((memberId) => {
           const isStale = state.staleMemberIds.includes(memberId)
 
