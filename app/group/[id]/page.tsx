@@ -221,14 +221,9 @@ export default function GroupPage() {
           <Tabs value={activeTab} className="w-full" onValueChange={setSelectedTab}>
             <TabsList className={`grid w-full ${showValidation ? "grid-cols-5" : "grid-cols-3"} h-11`}>
               {showValidation && (
-                <>
-                  <TabsTrigger value="status" className={tabTriggerClass}>
-                    Mi estado
-                  </TabsTrigger>
-                  <TabsTrigger value="validation" className={tabTriggerClass}>
-                    Validación
-                  </TabsTrigger>
-                </>
+                <TabsTrigger value="status" className={tabTriggerClass}>
+                  Mi estado
+                </TabsTrigger>
               )}
               <TabsTrigger value="balances" className={tabTriggerClass}>
                 Saldos
@@ -236,6 +231,11 @@ export default function GroupPage() {
               <TabsTrigger value="expenses" className={tabTriggerClass}>
                 Gastos
               </TabsTrigger>
+              {showValidation && (
+                <TabsTrigger value="validation" className={tabTriggerClass}>
+                  Validación
+                </TabsTrigger>
+              )}
               <TabsTrigger value="settlement" className={tabTriggerClass}>
                 Saldar
               </TabsTrigger>
@@ -260,12 +260,6 @@ export default function GroupPage() {
               </TabsContent>
             )}
 
-            {showValidation && validationState && (
-              <TabsContent value="validation" className="mt-4">
-                <ValidationList group={group} state={validationState} />
-              </TabsContent>
-            )}
-
             <TabsContent value="expenses" className="mt-4">
               <ExpenseList
                 group={group}
@@ -283,6 +277,12 @@ export default function GroupPage() {
                 group={group}
               />
             </TabsContent>
+
+            {showValidation && validationState && (
+              <TabsContent value="validation" className="mt-4">
+                <ValidationList group={group} state={validationState} />
+              </TabsContent>
+            )}
 
             <TabsContent value="settlement" className="mt-4">
               <DebtSettlement
