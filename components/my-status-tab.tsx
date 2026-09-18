@@ -4,6 +4,7 @@ import { useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { MemberExpensesDialog } from "@/components/member-expenses-dialog"
+import { InfoHint } from "@/components/info-hint"
 import { AlertCircle, CheckCircle2, Loader2, RotateCcw } from "lucide-react"
 import type { Group } from "@/core/entities/Group"
 import type { Expense } from "@/core/entities/Expense"
@@ -116,6 +117,14 @@ export function MyStatusTab({
 
       <Card>
         <CardContent className="p-4 space-y-3">
+          <div className="flex items-center gap-1.5">
+            <h2 className="text-sm font-semibold">Validación</h2>
+            <InfoHint label="Qué es la validación">
+              Antes de pagar, cada persona revisa y confirma que sus gastos y pagos son correctos.
+              Nadie debería pagar hasta que todos hayan validado.
+            </InfoHint>
+          </div>
+
           {validationState.hasExpenses ? (
             canValidate ? (
               <>
@@ -133,7 +142,13 @@ export function MyStatusTab({
                 )}
 
                 {myValidation ? (
-                  <Button variant="outline" className="w-full" onClick={onRetire} disabled={saving}>
+                  <Button
+                    data-tour="validate-action"
+                    variant="outline"
+                    className="w-full"
+                    onClick={onRetire}
+                    disabled={saving}
+                  >
                     {saving ? (
                       <Loader2 className="h-4 w-4 mr-2 animate-spin" />
                     ) : (
@@ -142,7 +157,12 @@ export function MyStatusTab({
                     Retirar la validación
                   </Button>
                 ) : (
-                  <Button className="w-full" onClick={onValidate} disabled={saving}>
+                  <Button
+                    data-tour="validate-action"
+                    className="w-full"
+                    onClick={onValidate}
+                    disabled={saving}
+                  >
                     {saving && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
                     He revisado mis gastos y pagos
                   </Button>

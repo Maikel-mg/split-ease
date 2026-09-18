@@ -1,4 +1,4 @@
-export type TourId = "welcome" | "group"
+export type TourId = "welcome" | "group" | "validation"
 
 export interface TourStep {
   /**
@@ -8,4 +8,9 @@ export interface TourStep {
   target?: string
   title: string
   description: string
+  /** Optional button rendered inside the step that opens another tour. */
+  action?: {
+    label: string
+    tourId: TourId
+  }
 }

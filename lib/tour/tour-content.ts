@@ -75,6 +75,10 @@ const VALIDATION_STEP: TourStep = {
   title: "Validación",
   description:
     "El grupo confirma los gastos entre todos. Cuando todos están de acuerdo, el grupo se cierra.",
+  action: {
+    label: "Ver la validación en detalle",
+    tourId: "validation",
+  },
 }
 
 /**
@@ -101,3 +105,47 @@ export function getGroupTour(isPrivate: boolean): TourStep[] {
   steps.push(SETTLEMENT_STEP)
   return steps
 }
+
+/**
+ * Focused tour for the validation flow, which is the newest and least
+ * understood feature. It can be launched on demand from the payments banner or
+ * from the "Validación" step of the group tour, so it never auto-starts.
+ */
+export const VALIDATION_TOUR: TourStep[] = [
+  {
+    title: "¿Qué es validar?",
+    description:
+      "Antes de pagar, cada persona del grupo confirma que sus gastos y pagos son correctos. Te lo enseño en cuatro pasos.",
+  },
+  {
+    target: '[data-tour="validation-progress"]',
+    title: "Progreso de validación",
+    description:
+      "Arriba ves cuántas personas ya han validado. Cuando está completo, el grupo puede pagar con tranquilidad.",
+  },
+  {
+    target: '[data-tour="payments-banner"]',
+    title: "Aviso de pagos pendientes",
+    description:
+      "Si ya hay pagos registrados y falta gente por validar, aparece este aviso: un cambio de última hora obligaría a rehacer los Bizum ya enviados.",
+  },
+  {
+    target: '[data-tour="tab-status"]',
+    title: "Mi estado",
+    description:
+      "Aquí revisas tu saldo y confirmas que tus gastos y pagos cuadran. Es lo primero que ves si te toca validar.",
+  },
+  {
+    target: '[data-tour="validate-action"]',
+    title: "Confirmar mis gastos y pagos",
+    description:
+      "Toca este botón cuando lo hayas revisado. Si algo cambia después, puedes retirar la validación y volver a revisarlo.",
+  },
+  {
+    target: '[data-tour="tab-validation"]',
+    title: "Validación del grupo",
+    description:
+      "En esta pestaña ves quién ha validado y quién falta, para saber si el grupo puede pagar ya.",
+  },
+]
+

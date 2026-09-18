@@ -1,6 +1,7 @@
 "use client"
 
 import { AlertTriangle, CheckCircle2, Clock } from "lucide-react"
+import { InfoHint } from "@/components/info-hint"
 import type { Group } from "@/core/entities/Group"
 import type { GroupValidationState } from "@/core/entities/Validation"
 
@@ -25,6 +26,14 @@ export function ValidationList({ group, state }: ValidationListProps) {
 
   return (
     <div className="space-y-3">
+      <div className="flex items-center gap-1.5">
+        <h2 className="text-sm font-semibold">Validación del grupo</h2>
+        <InfoHint label="Qué es la validación">
+          Antes de pagar, cada persona revisa y confirma que sus gastos y pagos son correctos.
+          Nadie debería pagar hasta que todos hayan validado.
+        </InfoHint>
+      </div>
+
       <p className="text-sm text-muted-foreground">
         {state.isComplete
           ? "Todos los miembros han validado sus gastos y pagos."
