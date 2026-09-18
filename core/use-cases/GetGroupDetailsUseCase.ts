@@ -2,10 +2,13 @@ import type { GroupService } from "@/core/services/GroupService"
 import type { ExpenseService } from "@/core/services/ExpenseService"
 import type { BalanceService } from "@/core/services/BalanceService"
 import type { PaymentService } from "@/core/services/PaymentService"
+import type { ValidationService } from "@/core/services/ValidationService"
+import type { ValidationRepository } from "@/core/ports/ValidationRepository"
 import type { Group } from "@/core/entities/Group"
 import type { Expense } from "@/core/entities/Expense"
 import type { Payment } from "@/core/entities/Payment"
 import type { Balance, Debt } from "@/core/entities/Balance"
+import type { GroupValidationState } from "@/core/entities/Validation"
 
 export interface GroupDetailsDTO {
   group: Group
@@ -13,6 +16,8 @@ export interface GroupDetailsDTO {
   visiblePayments: Payment[]
   balances: Balance[]
   debts: Debt[]
+  validationState: GroupValidationState
+  myValidation: boolean
 }
 
 export class GetGroupDetailsUseCase {
@@ -21,6 +26,8 @@ export class GetGroupDetailsUseCase {
     private expenseService: ExpenseService,
     private balanceService: BalanceService,
     private paymentService: PaymentService,
+    private validationService: ValidationService,
+    private validationRepository: ValidationRepository,
   ) {}
 
   async execute(groupId: string, userMemberName?: string): Promise<GroupDetailsDTO | null> {
@@ -82,12 +89,30 @@ export class GetGroupDetailsUseCase {
       finalBalances = this.balanceService.calculateRelativeBalances(group, directDebts, userMemberName)
     }
 
+    // 5. Validation State
+    // The fingerprint must be built from every expense in the group, never from
+    // the visibility-filtered list. A private group has no validation at all, and
+    // an empty state is exactly "there is nothing to validate".
+    const validations = group.isPrivate ? [] : await this.validationRepository.findByGroup(groupId)
+    const validationState = group.isPrivate
+      ? this.validationService.computeState(group, [], [])
+      : this.validationService.computeState(group, expensesData, validations)
+
+    const myMember = userMemberName
+      ? group.members.find((m) => m.name === userMemberName)
+      : undefined
+    const myValidation = myMember
+      ? validationState.validatedMemberIds.includes(myMember.id)
+      : false
+
     return {
       group,
       visibleExpenses,
       visiblePayments,
       balances: finalBalances,
-      debts: debtsData
+      debts: debtsData,
+      validationState,
+      myValidation
     }
   }
 }

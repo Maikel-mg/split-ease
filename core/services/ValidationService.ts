@@ -54,7 +54,7 @@ export class ValidationService {
   }
 
   // A member counts if they paid for or took part in at least one expense.
-  private eligibleMemberIds(group: Group, expenses: Expense[]): string[] {
+  eligibleMemberIds(group: Group, expenses: Expense[]): string[] {
     const involved = new Set<string>()
 
     expenses.forEach((expense) => {
