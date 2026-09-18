@@ -23,7 +23,7 @@ import { Input } from "@/components/ui/input"
 
 import { GroupMenu } from "@/components/group-menu"
 import { AppTour } from "@/components/app-tour"
-import { getGroupTour } from "@/lib/tour/tour-content"
+import { getGroupTour, VALIDATION_TOUR } from "@/lib/tour/tour-content"
 import { useGroupDetails } from "@/lib/hooks/use-group-details"
 import { useGroupValidation } from "@/lib/hooks/use-group-validation"
 
@@ -301,6 +301,9 @@ export default function GroupPage() {
       </div>
 
       <AppTour id="group" steps={groupTour} />
+      {showValidation && (
+        <AppTour id="validation" steps={VALIDATION_TOUR} autoStart={false} />
+      )}
     </main>
   )
 }

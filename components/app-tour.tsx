@@ -4,7 +4,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { createPortal } from "react-dom"
 import { ChevronLeft, ChevronRight, X } from "lucide-react"
 import { Button } from "@/components/ui/button"
-import { hasSeenTour, markTourSeen, TOUR_EVENT } from "@/lib/tour/tour-runtime"
+import { hasSeenTour, markTourSeen, requestTour, TOUR_EVENT } from "@/lib/tour/tour-runtime"
 import type { TourId, TourStep } from "@/lib/tour/tour-types"
 
 interface AppTourProps {
@@ -72,6 +72,15 @@ export function AppTour({ id, steps, autoStart = true, startDelay = 700 }: AppTo
   const prev = useCallback(() => {
     setIndex((current) => Math.max(0, current - 1))
   }, [])
+
+  const runAction = useCallback(
+    (action: NonNullable<TourStep["action"]>) => {
+      finish()
+      // Let the current tour close before opening the next one.
+      window.setTimeout(() => requestTour(action.tourId), 0)
+    },
+    [finish],
+  )
 
   const start = useCallback(() => {
     // Skip steps whose target is not on screen (e.g. validation tabs on a
@@ -249,6 +258,16 @@ export function AppTour({ id, steps, autoStart = true, startDelay = 700 }: AppTo
         <p className="mt-2 text-sm leading-relaxed text-muted-foreground text-pretty">
           {step.description}
         </p>
+
+        {step.action && (
+          <button
+            type="button"
+            onClick={() => runAction(step.action!)}
+            className="mt-2 text-sm font-medium text-primary underline-offset-4 hover:underline"
+          >
+            {step.action.label}
+          </button>
+        )}
 
         <div className="mt-4 flex items-center justify-between gap-2">
           <Button type="button" variant="ghost" size="sm" onClick={finish}>
