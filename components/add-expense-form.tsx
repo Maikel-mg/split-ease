@@ -28,9 +28,16 @@ interface AddExpenseFormProps {
   onExpenseAdded: (expense: Expense) => void
   editExpense?: Expense
   onExpenseUpdated?: (expense: Expense) => void
+  hasPayments?: boolean
 }
 
-export function AddExpenseForm({ group, onExpenseAdded, editExpense, onExpenseUpdated }: AddExpenseFormProps) {
+export function AddExpenseForm({
+  group,
+  onExpenseAdded,
+  editExpense,
+  onExpenseUpdated,
+  hasPayments = false,
+}: AddExpenseFormProps) {
   const { userMemberName } = useUserIdentity(group.id)
 
   const [open, setOpen] = useState(false)
@@ -46,6 +53,7 @@ export function AddExpenseForm({ group, onExpenseAdded, editExpense, onExpenseUp
   const [imageFile, setImageFile] = useState<File | null>(null)
   const [imagePreview, setImagePreview] = useState<string | null>(null)
   const [isUploadingImage, setIsUploadingImage] = useState(false)
+  const [showPaymentWarning, setShowPaymentWarning] = useState(false)
 
   useEffect(() => {
     if (open && !editExpense && userMemberName) {
@@ -161,14 +169,26 @@ const calculateShare = (memberId: string): number => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setError("")
-    setIsLoading(true)
 
     const parsedAmount = Number.parseFloat(amount)
     if (Number.isNaN(parsedAmount) || parsedAmount <= 0) {
       setError("El importe debe ser mayor que 0")
-      setIsLoading(false)
       return
     }
+
+    // Saving rewires the payment plan. If somebody has already paid, ask once
+    // before touching the expenses.
+    if (hasPayments && !showPaymentWarning) {
+      setShowPaymentWarning(true)
+      return
+    }
+
+    await saveExpense(parsedAmount)
+  }
+
+  const saveExpense = async (parsedAmount: number) => {
+    setError("")
+    setIsLoading(true)
 
     try {
       let imageUrl = editExpense?.imageUrl || null
@@ -212,6 +232,7 @@ const calculateShare = (memberId: string): number => {
       }
 
       setOpen(false)
+      setShowPaymentWarning(false)
 
       setAmount("")
       setDescription("")
@@ -231,7 +252,13 @@ const calculateShare = (memberId: string): number => {
   }
 
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
+    <Dialog
+      open={open}
+      onOpenChange={(nextOpen) => {
+        setOpen(nextOpen)
+        if (!nextOpen) setShowPaymentWarning(false)
+      }}
+    >
       {!editExpense && (
         <DialogTrigger asChild>
           <Button className="w-full h-12 text-base font-medium" size="lg">
@@ -443,15 +470,45 @@ const calculateShare = (memberId: string): number => {
 
           {error && <p className="text-sm text-destructive">{error}</p>}
 
-          <Button type="submit" className="w-full h-12 text-base font-medium" disabled={isLoading || isUploadingImage}>
-            {isUploadingImage
-              ? "Subiendo imagen..."
-              : isLoading
-                ? "Guardando..."
-                : editExpense
-                  ? "Actualizar"
-                  : "Añadir"}
-          </Button>
+          {showPaymentWarning && (
+            <div className="space-y-2 rounded-lg border border-amber-500/40 bg-amber-500/10 p-3">
+              <p className="text-sm font-medium text-amber-700">Ya hay pagos registrados</p>
+              <p className="text-sm text-amber-700/90">
+                Guardar este cambio recalcula el plan de pagos. Si alguien ya había hecho su Bizum,
+                tendrá que rechazarlo y volver a empezar.
+              </p>
+              <div className="flex gap-2 pt-1">
+                <Button
+                  type="button"
+                  variant="outline"
+                  className="flex-1 bg-transparent"
+                  onClick={() => setShowPaymentWarning(false)}
+                >
+                  Cancelar
+                </Button>
+                <Button
+                  type="button"
+                  className="flex-1"
+                  disabled={isLoading || isUploadingImage}
+                  onClick={() => saveExpense(Number.parseFloat(amount))}
+                >
+                  Guardar igualmente
+                </Button>
+              </div>
+            </div>
+          )}
+
+          {!showPaymentWarning && (
+            <Button type="submit" className="w-full h-12 text-base font-medium" disabled={isLoading || isUploadingImage}>
+              {isUploadingImage
+                ? "Subiendo imagen..."
+                : isLoading
+                  ? "Guardando..."
+                  : editExpense
+                    ? "Actualizar"
+                    : "Añadir"}
+            </Button>
+          )}
         </form>
       </DialogContent>
     </Dialog>

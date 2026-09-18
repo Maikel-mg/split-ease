@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect, useCallback } from "react"
+import { useState, useEffect } from "react"
 import { useParams, useRouter } from "next/navigation"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Button } from "@/components/ui/button"
@@ -9,7 +9,10 @@ import { AddExpenseForm } from "@/components/add-expense-form"
 import { ExpenseList } from "@/components/expense-list"
 import { BalanceSummary } from "@/components/balance-summary"
 import { DebtSettlement } from "@/components/debt-settlement"
+import { DanglingPaymentsBanner } from "@/components/dangling-payments-banner"
 import { GroupInfo } from "@/components/group-info"
+import { MyStatusTab } from "@/components/my-status-tab"
+import { ValidationProgress } from "@/components/validation-progress"
 import { useUserIdentity } from "@/lib/hooks/use-user-identity"
 import type { Group } from "@/core/entities/Group"
 import type { Expense } from "@/core/entities/Expense"
@@ -19,6 +22,7 @@ import { Input } from "@/components/ui/input"
 
 import { GroupMenu } from "@/components/group-menu"
 import { useGroupDetails } from "@/lib/hooks/use-group-details"
+import { useGroupValidation } from "@/lib/hooks/use-group-validation"
 
 export default function GroupPage() {
   const params = useParams()
@@ -32,6 +36,8 @@ export default function GroupPage() {
     payments, 
     balances, 
     debts, 
+    validationState,
+    myValidation,
     loading, 
     refresh: loadData,
     setGroup,
@@ -41,10 +47,17 @@ export default function GroupPage() {
     setDebts
   } = useGroupDetails(groupId, userMemberName)
 
+  const { validate, retire, saving, error: validationError } = useGroupValidation()
+
   const [searchQuery, setSearchQuery] = useState("")
   const [searchVisible, setSearchVisible] = useState(false)
-  const [activeTab, setActiveTab] = useState("balances")
+  const [selectedTab, setSelectedTab] = useState<string | null>(null)
   const [editingExpense, setEditingExpense] = useState<Expense | undefined>(undefined)
+
+  // Validation only exists in public groups. Until the user picks a tab, a public
+  // group opens on "Mi estado" and a private one on "Saldos".
+  const showValidation = !!group && !group.isPrivate
+  const activeTab = selectedTab ?? (showValidation ? "status" : "balances")
 
   useEffect(() => {
     setSearchQuery("")
@@ -70,6 +83,16 @@ export default function GroupPage() {
 
   const handlePaymentsRegistered = () => {
     loadData()
+  }
+
+  const handleValidate = async () => {
+    if (!group || !userMemberName) return
+    if (await validate(group, userMemberName, expenses)) loadData()
+  }
+
+  const handleRetire = async () => {
+    if (!group || !userMemberName) return
+    if (await retire(group, userMemberName)) loadData()
   }
 
   const toggleSearch = () => {
@@ -133,10 +156,16 @@ export default function GroupPage() {
               Volver
             </Button>
 
-            <div className="flex items-center gap-1">
-              <Button variant="ghost" size="icon" onClick={toggleSearch} className="h-9 w-9">
-                {searchVisible ? <X className="h-5 w-5" /> : <Search className="h-5 w-5" />}
-              </Button>
+            <div className="flex items-center gap-2">
+              {showValidation && validationState && (
+                <ValidationProgress state={validationState} />
+              )}
+
+              {activeTab !== "status" && (
+                <Button variant="ghost" size="icon" onClick={toggleSearch} className="h-9 w-9">
+                  {searchVisible ? <X className="h-5 w-5" /> : <Search className="h-5 w-5" />}
+                </Button>
+              )}
 
                <GroupMenu 
                 group={group} 
@@ -156,9 +185,7 @@ export default function GroupPage() {
                 placeholder={
                   activeTab === "expenses"
                     ? "Buscar por título o pagador..."
-                    : activeTab === "balances"
-                      ? "Buscar por participante..."
-                      : "Buscar por participante..."
+                    : "Buscar por participante..."
                 }
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
@@ -172,15 +199,28 @@ export default function GroupPage() {
         <div className="p-4 space-y-4">
           <GroupInfo group={group} userMemberName={userMemberName} />
 
+          {showValidation && validationState && payments.length > 0 && !validationState.isComplete && (
+            <DanglingPaymentsBanner
+              validatedCount={validationState.validatedCount}
+              totalEligible={validationState.totalEligible}
+            />
+          )}
+
           <AddExpenseForm
             group={group}
             onExpenseAdded={handleExpenseAdded}
             editExpense={editingExpense}
             onExpenseUpdated={handleExpenseUpdated}
+            hasPayments={payments.length > 0}
           />
 
-          <Tabs defaultValue="balances" className="w-full" onValueChange={setActiveTab}>
-            <TabsList className="grid w-full grid-cols-3 h-11">
+          <Tabs value={activeTab} className="w-full" onValueChange={setSelectedTab}>
+            <TabsList className={`grid w-full ${showValidation ? "grid-cols-4" : "grid-cols-3"} h-11`}>
+              {showValidation && (
+                <TabsTrigger value="status" className="text-sm">
+                  Mi estado
+                </TabsTrigger>
+              )}
               <TabsTrigger value="balances" className="text-sm">
                 Saldos
               </TabsTrigger>
@@ -191,6 +231,25 @@ export default function GroupPage() {
                 Saldar
               </TabsTrigger>
             </TabsList>
+
+            {showValidation && validationState && (
+              <TabsContent value="status" className="mt-4">
+                <MyStatusTab
+                  group={group}
+                  expenses={expenses}
+                  payments={payments}
+                  balances={balances}
+                  debts={debts}
+                  validationState={validationState}
+                  myValidation={myValidation}
+                  userMemberName={userMemberName}
+                  saving={saving}
+                  error={validationError}
+                  onValidate={handleValidate}
+                  onRetire={handleRetire}
+                />
+              </TabsContent>
+            )}
 
             <TabsContent value="expenses" className="mt-4">
               <ExpenseList
