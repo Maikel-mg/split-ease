@@ -261,7 +261,7 @@ const calculateShare = (memberId: string): number => {
     >
       {!editExpense && (
         <DialogTrigger asChild>
-          <Button className="w-full h-12 text-base font-medium" size="lg">
+          <Button data-tour="add-expense" className="w-full h-12 text-base font-medium" size="lg">
             <Plus className="h-5 w-5 mr-2" />
             Agregar Gasto
           </Button>

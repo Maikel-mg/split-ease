@@ -5,7 +5,10 @@ import { CreateGroupForm } from "@/components/create-group-form"
 import { JoinGroupForm } from "@/components/join-group-form"
 import { Button } from "@/components/ui/button"
 import { useRouter } from "next/navigation"
-import { Users } from "lucide-react"
+import { HelpCircle, Users } from "lucide-react"
+import { AppTour } from "@/components/app-tour"
+import { WELCOME_TOUR } from "@/lib/tour/tour-content"
+import { requestTour } from "@/lib/tour/tour-runtime"
 import type { Group } from "@/core/entities/Group"
 
 interface HomePageProps {
@@ -43,10 +46,16 @@ export default function HomePage({ displayName }: HomePageProps) {
             </div>
 
             <div className="space-y-3 pt-4">
-              <Button className="w-full h-12 text-base font-medium" size="lg" onClick={() => setView("create")}>
+              <Button
+                data-tour="create-group"
+                className="w-full h-12 text-base font-medium"
+                size="lg"
+                onClick={() => setView("create")}
+              >
                 Crear Nuevo Grupo
               </Button>
               <Button
+                data-tour="join-group"
                 className="w-full h-12 text-base font-medium bg-transparent"
                 variant="outline"
                 size="lg"
@@ -54,6 +63,14 @@ export default function HomePage({ displayName }: HomePageProps) {
               >
                 Unirse a un Grupo Existente
               </Button>
+              <button
+                type="button"
+                onClick={() => requestTour("welcome")}
+                className="mx-auto flex items-center justify-center gap-1.5 pt-2 text-sm text-muted-foreground transition-colors hover:text-foreground"
+              >
+                <HelpCircle className="h-4 w-4" />
+                Ver cómo funciona
+              </button>
             </div>
           </div>
         )}
@@ -75,6 +92,8 @@ export default function HomePage({ displayName }: HomePageProps) {
             <JoinGroupForm onGroupJoined={handleGroupJoined} />
           </div>
         )}
+
+        <AppTour id="welcome" steps={WELCOME_TOUR} autoStart={view === "welcome"} />
       </div>
     </main>
   )
