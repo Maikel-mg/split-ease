@@ -5,6 +5,13 @@ Todos los cambios notables en este proyecto se documentan en este archivo.
 El formato se basa en [Keep a Changelog](https://keepachangelog.com/es/1.1.0/),
 y este proyecto adherisce a [Semantic Versioning](https://semver.org/lang/es/).
 
+## [v2026_09_18_2] - 2026-09-18
+
+### Added
+
+- **Ayuda contextual en la validación** — Icono de información en la sección de validación que explica qué es validar. Funciona con hover en escritorio y con toque en móvil (donde no existe el hover).
+- **Tour de la validación** — Tour enfocado en la validación de gastos y pagos, lanzable desde el aviso de pagos registrados y desde el paso "Validación" del tour del grupo.
+
 ## [v2026_09_18_1] - 2026-09-18
 
 ### Added
