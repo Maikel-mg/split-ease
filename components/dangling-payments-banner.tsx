@@ -1,6 +1,7 @@
 "use client"
 
-import { AlertTriangle } from "lucide-react"
+import { AlertTriangle, HelpCircle } from "lucide-react"
+import { requestTour } from "@/lib/tour/tour-runtime"
 
 interface DanglingPaymentsBannerProps {
   validatedCount: number
@@ -14,7 +15,10 @@ export function DanglingPaymentsBanner({
   totalEligible,
 }: DanglingPaymentsBannerProps) {
   return (
-    <div className="flex items-start gap-2 rounded-lg border border-amber-500/40 bg-amber-500/10 p-3 text-sm">
+    <div
+      data-tour="payments-banner"
+      className="flex items-start gap-2 rounded-lg border border-amber-500/40 bg-amber-500/10 p-3 text-sm"
+    >
       <AlertTriangle className="h-4 w-4 mt-0.5 text-amber-600 flex-shrink-0" />
       <div className="space-y-1">
         <p className="font-medium text-amber-700">Ya hay pagos registrados</p>
@@ -23,6 +27,14 @@ export function DanglingPaymentsBanner({
           gasto ahora, el plan de pagos cambiará y puede que alguno ya haya hecho su Bizum: habría
           que rechazarlo y volver a empezar.
         </p>
+        <button
+          type="button"
+          onClick={() => requestTour("validation")}
+          className="inline-flex items-center gap-1 font-medium text-amber-800 underline underline-offset-2 transition-colors hover:text-amber-900"
+        >
+          <HelpCircle className="h-3.5 w-3.5" />
+          ¿Cómo funciona la validación?
+        </button>
       </div>
     </div>
   )

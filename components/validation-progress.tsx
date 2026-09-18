@@ -13,6 +13,7 @@ export function ValidationProgress({ state }: ValidationProgressProps) {
 
   return (
     <div
+      data-tour="validation-progress"
       className={`flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-xs font-medium whitespace-nowrap ${
         state.isComplete
           ? "border-primary/30 bg-primary/10 text-primary"
