@@ -15,9 +15,16 @@ installed on every machine in this project. `npm run <script>` runs the same
 
 - `pnpm dev` — dev server
 - `pnpm build` — production build
-- `pnpm test` — test suite (vitest); 2 files, 13 tests, green
+- `pnpm test` — test suite (vitest); 4 files, 41 tests, green
 - `pnpm typecheck` — `tsc --noEmit`; currently fails with 5 pre-existing errors
 - `pnpm lint` — **not configured**: no ESLint dependency or config, and `next lint` was removed in Next 16
+
+### Database
+
+There is no `supabase/` folder and no migration tooling. Schema changes are plain
+`.sql` files in `scripts/` (`001`..`013`), run by hand in the Supabase SQL editor.
+`groups.is_private` and `groups.archived` were added through the dashboard and are
+only backfilled in `013`.
 
 ## Agent skills
 
