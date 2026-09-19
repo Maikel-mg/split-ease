@@ -32,6 +32,7 @@ export function MyStatusTab({
   group,
   expenses,
   payments,
+  balances,
   debts,
   validationState,
   myValidation,
@@ -59,8 +60,29 @@ export function MyStatusTab({
   const canValidate = validationState.eligibleMemberIds.includes(member.id)
   const isStale = validationState.staleMemberIds.includes(member.id)
 
+  const netBalance = balances.find((b) => b.memberName === member.name)?.netBalance ?? 0
+  const credit = netBalance > 0.01
+  const debit = netBalance < -0.01
+
   return (
     <div className="space-y-8">
+      <section
+        className={`rounded-2xl px-5 py-5 ${
+          credit ? "bg-credit-tint" : debit ? "bg-debit-tint" : "bg-muted"
+        }`}
+      >
+        <p className="text-sm font-medium text-ink-2">
+          {credit ? "Te deben" : debit ? "Debes" : "Estás al día"}
+        </p>
+        <p
+          className={`text-4xl font-bold tracking-tight tabular-nums ${
+            credit ? "text-credit" : debit ? "text-debit" : "text-ink-2"
+          }`}
+        >
+          {formatMoney(Math.abs(netBalance))}
+        </p>
+      </section>
+
       <section className="space-y-4">
         {iOwe.length > 0 && (
           <div>

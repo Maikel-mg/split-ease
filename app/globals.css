@@ -17,6 +17,17 @@
   --debit: #d92d20;
   --warning: #8a5a00;
   --warning-surface: #fbf3e0;
+  --credit-tint: #e9f4ee;
+  --debit-tint: #fdecea;
+
+  --person-1: #0d74ce;
+  --person-2: #4f46e5;
+  --person-3: #8e4ec6;
+  --person-4: #c026d3;
+  --person-5: #d6409f;
+  --person-6: #12a594;
+  --person-7: #0891b2;
+  --person-8: #7c3aed;
 
   --background: var(--paper);
   --foreground: var(--ink);
@@ -35,7 +46,7 @@
   --destructive: var(--debit);
   --destructive-foreground: #ffffff;
   --border: var(--rule);
-  --input: var(--surface);
+  --input: #8f8f8b;
   --ring: var(--ink);
   --chart-1: var(--credit);
   --chart-2: var(--ink);
@@ -63,6 +74,17 @@
   --debit: #f8716a;
   --warning: #f5c451;
   --warning-surface: #2b2513;
+  --credit-tint: #15251d;
+  --debit-tint: #2a1715;
+
+  --person-1: #5aa9e6;
+  --person-2: #818cf8;
+  --person-3: #b794f6;
+  --person-4: #e879f9;
+  --person-5: #f472b6;
+  --person-6: #2dd4bf;
+  --person-7: #38bdf8;
+  --person-8: #a78bfa;
 
   --background: var(--paper);
   --foreground: var(--ink);
@@ -81,7 +103,7 @@
   --destructive: var(--debit);
   --destructive-foreground: #1b1d21;
   --border: var(--rule);
-  --input: var(--surface);
+  --input: #6b7078;
   --ring: var(--ink);
   --chart-1: var(--credit);
   --chart-2: var(--ink);
@@ -111,6 +133,8 @@
   --color-debit: var(--debit);
   --color-warning: var(--warning);
   --color-warning-surface: var(--warning-surface);
+  --color-credit-tint: var(--credit-tint);
+  --color-debit-tint: var(--debit-tint);
 
   --color-background: var(--background);
   --color-foreground: var(--foreground);

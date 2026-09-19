@@ -11,7 +11,6 @@ import { BalanceSummary } from "@/components/balance-summary"
 import { DebtSettlement } from "@/components/debt-settlement"
 import { DanglingPaymentsBanner } from "@/components/dangling-payments-banner"
 import { GroupInfo } from "@/components/group-info"
-import { MyPosition } from "@/components/my-position"
 import { MyStatusTab } from "@/components/my-status-tab"
 import { ValidationList } from "@/components/validation-list"
 import { ValidationProgress } from "@/components/validation-progress"
@@ -207,8 +206,6 @@ export default function GroupPage() {
 
         <div className="p-4 space-y-4">
           <GroupInfo group={group} userMemberName={userMemberName} />
-
-          <MyPosition balances={balances} userMemberName={userMemberName} />
 
           {showValidation && validationState && payments.length > 0 && !validationState.isComplete && (
             <DanglingPaymentsBanner
