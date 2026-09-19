@@ -6,7 +6,6 @@ import { useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { joinGroupWithCode } from "@/app/actions/group-actions"
 import { useRouter } from "next/navigation"
 import { useUserIdentity } from "@/lib/hooks/use-user-identity"
@@ -28,12 +27,12 @@ export function JoinGroupForm({ onGroupJoined }: JoinGroupFormProps) {
     setError("")
 
     if (!displayName.trim()) {
-      setError("Por favor ingresa tu nombre")
+      setError("Escribe tu nombre.")
       return
     }
 
     if (!code.trim()) {
-      setError("Por favor ingresa el código del grupo")
+      setError("Escribe el código del grupo.")
       return
     }
 
@@ -44,64 +43,57 @@ export function JoinGroupForm({ onGroupJoined }: JoinGroupFormProps) {
 
       if (result.success) {
         setIdentity(result.groupId, displayName.trim())
-
-        // Navigate to the group page
         router.push(`/group/${result.groupId}`)
         if (onGroupJoined) {
           onGroupJoined(result.groupId)
         }
       }
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Error al unirse al grupo")
+      setError(err instanceof Error ? err.message : "No se pudo unir al grupo")
     } finally {
       setIsLoading(false)
     }
   }
 
   return (
-    <Card className="w-full shadow-sm">
-      <CardHeader className="space-y-1">
-        <CardTitle className="text-2xl">Unirse a un grupo</CardTitle>
-        <CardDescription>Ingresa tu nombre y el código del grupo</CardDescription>
-      </CardHeader>
-      <CardContent>
-        <form onSubmit={handleSubmit} className="space-y-5">
-          <div className="space-y-2">
-            <Label htmlFor="displayName" className="text-sm font-medium">
-              Tu nombre
-            </Label>
-            <Input
-              id="displayName"
-              placeholder="¿Cómo te llamas?"
-              value={displayName}
-              onChange={(e) => setDisplayName(e.target.value)}
-              required
-              className="h-11"
-            />
-          </div>
+    <div className="w-full">
+      <div className="mb-6 space-y-1">
+        <h1 className="text-2xl font-bold tracking-tight">Unirse a un grupo</h1>
+        <p className="text-sm text-ink-2">Necesitas tu nombre y el código que te hayan pasado.</p>
+      </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="code" className="text-sm font-medium">
-              Código del grupo
-            </Label>
-            <Input
-              id="code"
-              placeholder="Ingresa el código alfanumérico"
-              value={code}
-              onChange={(e) => setCode(e.target.value.toUpperCase())}
-              maxLength={6}
-              required
-              className="h-11"
-            />
-          </div>
+      <form onSubmit={handleSubmit} className="space-y-5">
+        <div className="space-y-2">
+          <Label htmlFor="displayName">Tu nombre</Label>
+          <Input
+            id="displayName"
+            placeholder="Ana"
+            value={displayName}
+            onChange={(e) => setDisplayName(e.target.value)}
+            required
+            className="h-11"
+          />
+        </div>
 
-          {error && <p className="text-sm text-destructive">{error}</p>}
+        <div className="space-y-2">
+          <Label htmlFor="code">Código del grupo</Label>
+          <Input
+            id="code"
+            placeholder="ABC123"
+            value={code}
+            onChange={(e) => setCode(e.target.value.toUpperCase())}
+            maxLength={6}
+            required
+            className="h-11 font-mono tracking-widest"
+          />
+        </div>
 
-          <Button type="submit" className="w-full h-12 text-base font-medium" disabled={isLoading}>
-            {isLoading ? "Uniéndose..." : "Unirse"}
-          </Button>
-        </form>
-      </CardContent>
-    </Card>
+        {error && <p className="text-sm text-debit">{error}</p>}
+
+        <Button type="submit" className="h-12 w-full text-base font-bold" disabled={isLoading}>
+          {isLoading ? "Uniéndose..." : "Unirme al grupo"}
+        </Button>
+      </form>
+    </div>
   )
 }

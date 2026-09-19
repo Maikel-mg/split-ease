@@ -20,7 +20,8 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog"
 import { Button } from "@/components/ui/button"
-import { User, Trash2 } from "lucide-react"
+import { MemberDot } from "@/components/member-dot"
+import { Trash2 } from "lucide-react"
 import type { Group } from "@/core/entities/Group"
 import type { Balance } from "@/core/entities/Balance"
 import { getGroupService } from "@/lib/services"
@@ -42,7 +43,6 @@ export function ManageMembersDialog({ open, onOpenChange, group, balances, onMem
     setIsRemoving(memberId)
     const groupService = getGroupService()
     try {
-      // This method needs to be created in GroupService
       await groupService.removeMember(group.id, memberId)
       toast({
         title: "Miembro eliminado",
@@ -52,8 +52,8 @@ export function ManageMembersDialog({ open, onOpenChange, group, balances, onMem
     } catch (error) {
       console.error("Error removing member:", error)
       toast({
-        title: "Error",
-        description: "No se pudo eliminar al miembro. Inténtalo de nuevo.",
+        title: "No se pudo eliminar al miembro",
+        description: "Inténtalo de nuevo en unos segundos.",
         variant: "destructive",
       })
     } finally {
@@ -65,51 +65,58 @@ export function ManageMembersDialog({ open, onOpenChange, group, balances, onMem
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
-          <DialogTitle>Gestionar miembros</DialogTitle>
-          <DialogDescription>Elimina miembros que no tengan deudas pendientes.</DialogDescription>
+          <DialogTitle>Miembros del grupo</DialogTitle>
+          <DialogDescription>
+            Solo puedes eliminar a quien tiene el saldo a cero.
+          </DialogDescription>
         </DialogHeader>
-        <div className="space-y-1 py-4">
+
+        <ul className="divide-y divide-rule">
           {group.members.map((member) => {
             const balance = balances.find((b) => b.memberId === member.id)
             const canBeRemoved = balance && Math.abs(balance.netBalance) < 0.01
 
             return (
-              <div key={member.id} className="flex items-center justify-between p-2 rounded-lg">
-                <div className="flex items-center gap-3">
-                  <div className="w-9 h-9 rounded-full bg-muted flex items-center justify-center flex-shrink-0">
-                    <User className="w-4 h-4 text-muted-foreground" />
-                  </div>
-                  <p className="font-medium">{member.name}</p>
-                </div>
+              <li key={member.id} className="flex items-center gap-3 py-3">
+                <MemberDot name={member.name} />
+                <span className="flex-1 truncate">{member.name}</span>
+
                 {canBeRemoved ? (
                   <AlertDialog>
                     <AlertDialogTrigger asChild>
-                      <Button variant="ghost" size="icon" className="text-red-500 hover:text-red-600" disabled={isRemoving === member.id}>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        aria-label={`Eliminar a ${member.name}`}
+                        className="h-8 w-8 text-ink-2 hover:text-debit"
+                        disabled={isRemoving === member.id}
+                      >
                         <Trash2 className="h-4 w-4" />
                       </Button>
                     </AlertDialogTrigger>
                     <AlertDialogContent>
                       <AlertDialogHeader>
-                        <AlertDialogTitle>¿Estás seguro de que quieres eliminar a {member.name}?</AlertDialogTitle>
+                        <AlertDialogTitle>¿Eliminar a {member.name}?</AlertDialogTitle>
                         <AlertDialogDescription>
-                          Esta acción no se puede deshacer. Se eliminará permanentemente al miembro del grupo.
+                          No se puede deshacer. Sus gastos y pagos seguirán en el grupo, pero
+                          dejará de aparecer como miembro.
                         </AlertDialogDescription>
                       </AlertDialogHeader>
                       <AlertDialogFooter>
                         <AlertDialogCancel>Cancelar</AlertDialogCancel>
                         <AlertDialogAction onClick={() => handleRemoveMember(member.id)}>
-                          Sí, eliminar
+                          Eliminar
                         </AlertDialogAction>
                       </AlertDialogFooter>
                     </AlertDialogContent>
                   </AlertDialog>
                 ) : (
-                  <div style={{ width: '2.25rem' }} /> // to align with button
+                  <span className="text-xs text-ink-2">Con deudas</span>
                 )}
-              </div>
+              </li>
             )
           })}
-        </div>
+        </ul>
       </DialogContent>
     </Dialog>
   )

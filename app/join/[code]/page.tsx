@@ -2,10 +2,10 @@
 
 import { useEffect, useState } from "react"
 import { useParams, useRouter } from "next/navigation"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Label } from "@/components/ui/label"
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
+import { MemberDot } from "@/components/member-dot"
 import { getGroupService } from "@/lib/services"
 import { useUserIdentity } from "@/lib/hooks/use-user-identity"
 import type { Group } from "@/core/entities/Group"
@@ -33,14 +33,14 @@ export default function JoinGroupPage() {
       const foundGroup = await groupService.getGroupByCode(code)
 
       if (!foundGroup) {
-        setError("Grupo no encontrado")
+        setError("No encontramos ningún grupo con ese código.")
         return
       }
 
       setGroup(foundGroup)
     } catch (err) {
       console.error("[v0] Error loading group:", err)
-      setError("Error al cargar el grupo")
+      setError("No se pudo cargar el grupo.")
     } finally {
       setIsLoading(false)
     }
@@ -52,12 +52,10 @@ export default function JoinGroupPage() {
     try {
       setIsJoining(true)
       setIdentity(group.id, selectedMember)
-      console.log("[v0] Joined group:", group.id, "as", selectedMember)
-      // Redirect to the group page
       router.push(`/group/${group.id}`)
     } catch (err) {
       console.error("[v0] Error joining group:", err)
-      setError("Error al unirse al grupo")
+      setError("No se pudo unir al grupo.")
     } finally {
       setIsJoining(false)
     }
@@ -65,63 +63,62 @@ export default function JoinGroupPage() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center p-4">
-        <Loader2 className="h-8 w-8 animate-spin text-primary" />
-      </div>
+      <main className="flex min-h-screen items-center justify-center bg-background p-6">
+        <Loader2 className="h-6 w-6 animate-spin text-ink-2" />
+      </main>
     )
   }
 
   if (error || !group) {
     return (
-      <div className="min-h-screen flex items-center justify-center p-4">
-        <Card className="w-full max-w-md">
-          <CardHeader>
-            <CardTitle>Error</CardTitle>
-            <CardDescription>{error || "Grupo no encontrado"}</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <Button onClick={() => router.push("/grupos")} className="w-full">
-              Volver a Mis Grupos
-            </Button>
-          </CardContent>
-        </Card>
-      </div>
+      <main className="flex min-h-screen items-center justify-center bg-background p-6">
+        <div className="w-full max-w-sm space-y-6">
+          <div className="space-y-1">
+            <h1 className="text-2xl font-bold tracking-tight">No se pudo entrar</h1>
+            <p className="text-sm text-ink-2">{error || "No encontramos el grupo."}</p>
+          </div>
+          <Button onClick={() => router.push("/grupos")} className="h-12 w-full text-base font-bold">
+            Ir a mis grupos
+          </Button>
+        </div>
+      </main>
     )
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-4 bg-muted/30">
-      <Card className="w-full max-w-md">
-        <CardHeader className="space-y-1">
-          <CardTitle className="text-2xl">Unirse a {group.name}</CardTitle>
-          <CardDescription>Selecciona quién eres en este grupo</CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-6">
-          <div className="space-y-3">
-            <Label className="text-sm font-medium">Miembros del grupo</Label>
-            <RadioGroup value={selectedMember} onValueChange={setSelectedMember}>
-              {group.members.map((member) => (
-                <div key={member.id} className="flex items-center space-x-3 space-y-0">
-                  <RadioGroupItem value={member.name} id={member.id} />
-                  <Label htmlFor={member.id} className="font-normal cursor-pointer flex-1 py-3">
-                    {member.name}
-                  </Label>
-                </div>
-              ))}
-            </RadioGroup>
-          </div>
+    <main className="flex min-h-screen items-center justify-center bg-background p-6">
+      <div className="w-full max-w-sm">
+        <div className="mb-6 space-y-1">
+          <h1 className="text-2xl font-bold tracking-tight">Unirse a {group.name}</h1>
+          <p className="text-sm text-ink-2">Selecciona quién eres en este grupo.</p>
+        </div>
 
-          {error && <p className="text-sm text-destructive">{error}</p>}
+        <RadioGroup
+          value={selectedMember}
+          onValueChange={setSelectedMember}
+          className="divide-y divide-rule"
+        >
+          {group.members.map((member) => (
+            <div key={member.id} className="flex items-center gap-3 py-3">
+              <RadioGroupItem value={member.name} id={member.id} />
+              <MemberDot name={member.name} />
+              <Label htmlFor={member.id} className="flex-1 cursor-pointer font-normal">
+                {member.name}
+              </Label>
+            </div>
+          ))}
+        </RadioGroup>
 
-          <Button
-            onClick={handleJoin}
-            disabled={!selectedMember || isJoining}
-            className="w-full h-12 text-base font-medium"
-          >
-            {isJoining ? "Uniéndose..." : "Unirse al grupo"}
-          </Button>
-        </CardContent>
-      </Card>
-    </div>
+        {error && <p className="mt-4 text-sm text-debit">{error}</p>}
+
+        <Button
+          onClick={handleJoin}
+          disabled={!selectedMember || isJoining}
+          className="mt-6 h-12 w-full text-base font-bold"
+        >
+          {isJoining ? "Uniéndose..." : "Unirme al grupo"}
+        </Button>
+      </div>
+    </main>
   )
 }
