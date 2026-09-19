@@ -5,6 +5,25 @@ Todos los cambios notables en este proyecto se documentan en este archivo.
 El formato se basa en [Keep a Changelog](https://keepachangelog.com/es/1.1.0/),
 y este proyecto adherisce a [Semantic Versioning](https://semver.org/lang/es/).
 
+## [v2026_09_19] - 2026-09-19
+
+### Changed
+
+- **Nuevo sistema visual en toda la app** — Rediseño completo de la identidad: paleta propia, tipografía Gabarito y un lenguaje de color con significado (verde y rojo para la dirección del saldo, un color por persona para identificarla, ámbar solo para avisos).
+- **Página de grupo** — Las cinco pestañas (Mi estado, Saldos, Gastos, Validación y Saldar) siguen el mismo lenguaje: listas sin tarjetas, cada miembro con su color y los importes en formato español con signo. El saldo propio se muestra al entrar, en "Mi estado".
+- **Resto de pantallas** — Bienvenida, acceso, alta, perfil, unirse a un grupo por enlace y todos los diálogos adoptan el mismo estilo.
+- **Modo oscuro** — Repasado por completo: superficies, colores de persona y tintes de saldo tienen variante propia para fondo oscuro.
+- **Aviso de pagos registrados** — Reducido a una línea para no ocupar la pantalla principal; la explicación larga se mantiene en el tour de validación.
+
+### Fixed
+
+- **Controles de formulario invisibles** — Los bordes de checkboxes, campos y selectores no se distinguían del fondo; ahora tienen contraste suficiente.
+- **Botones secundarios** — La variante de botón con borde se confundía con texto suelto; ahora tiene relleno y borde visibles.
+
+### Removed
+
+- **Componente de deudas simplificadas sin usar** — Se elimina código muerto que quedaba del diseño anterior.
+
 ## [v2026_09_18_2] - 2026-09-18
 
 ### Added
