@@ -19,6 +19,7 @@ import { Checkbox } from "@/components/ui/checkbox"
 import { Plus, X, Minus, Camera } from "lucide-react"
 import { getExpenseService } from "@/lib/services"
 import { uploadExpenseImage, deleteExpenseImage } from "@/lib/upload-image"
+import { formatMoney } from "@/lib/format"
 import type { Group } from "@/core/entities/Group"
 import type { Expense } from "@/core/entities/Expense"
 import { useUserIdentity } from "@/lib/hooks/use-user-identity"
@@ -423,7 +424,7 @@ const calculateShare = (memberId: string): number => {
                     </div>
                     {isSelected && (
                       <div className="flex items-center gap-2">
-                        {splitMode === "equally" && <span className="text-sm font-medium">{share.toFixed(2)} €</span>}
+                        {splitMode === "equally" && <span className="tabular-nums text-sm font-medium">{formatMoney(share)}</span>}
                         {splitMode === "shares" && (
                           <div className="flex items-center gap-1">
                             <Button
@@ -446,7 +447,7 @@ const calculateShare = (memberId: string): number => {
                             >
                               <Plus className="h-4 w-4" />
                             </Button>
-                            <span className="text-sm font-medium ml-1">{share.toFixed(2)} €</span>
+                            <span className="tabular-nums text-sm font-medium ml-1">{formatMoney(share)}</span>
                           </div>
                         )}
                         {splitMode === "amounts" && (
@@ -461,7 +462,7 @@ const calculateShare = (memberId: string): number => {
                         )}
                       </div>
                     )}
-                    {!isSelected && <span className="text-sm font-medium text-muted-foreground">0,00 €</span>}
+                    {!isSelected && <span className="tabular-nums text-sm font-medium text-ink-2">{formatMoney(0)}</span>}
                   </div>
                 )
               })}
@@ -471,9 +472,9 @@ const calculateShare = (memberId: string): number => {
           {error && <p className="text-sm text-destructive">{error}</p>}
 
           {showPaymentWarning && (
-            <div className="space-y-2 rounded-lg border border-amber-500/40 bg-amber-500/10 p-3">
-              <p className="text-sm font-medium text-amber-700">Ya hay pagos registrados</p>
-              <p className="text-sm text-amber-700/90">
+            <div className="space-y-2 rounded-lg bg-warning-surface p-3 text-warning">
+              <p className="text-sm font-bold">Ya hay pagos registrados</p>
+              <p className="text-sm">
                 Guardar este cambio recalcula el plan de pagos. Si alguien ya había hecho su Bizum,
                 tendrá que rechazarlo y volver a empezar.
               </p>

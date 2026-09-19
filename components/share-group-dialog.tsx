@@ -1,10 +1,15 @@
 "use client"
 
 import { useState } from "react"
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+} from "@/components/ui/dialog"
 import { Button } from "@/components/ui/button"
-import { Copy, Check, Share2 } from "lucide-react"
-import { Card, CardContent } from "@/components/ui/card"
+import { Copy, Check } from "lucide-react"
 
 interface ShareGroupDialogProps {
   groupName: string
@@ -17,7 +22,8 @@ export function ShareGroupDialog({ groupName, groupCode, open, onOpenChange }: S
   const [copiedCode, setCopiedCode] = useState(false)
   const [copiedUrl, setCopiedUrl] = useState(false)
 
-  const joinUrl = typeof window !== "undefined" ? `${window.location.origin}/join/${groupCode}` : ""
+  const joinUrl =
+    typeof window !== "undefined" ? `${window.location.origin}/join/${groupCode}` : ""
 
   const handleCopyCode = async () => {
     await navigator.clipboard.writeText(groupCode)
@@ -35,62 +41,42 @@ export function ShareGroupDialog({ groupName, groupCode, open, onOpenChange }: S
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
-          <DialogTitle className="flex items-center gap-2">
-            <Share2 className="h-5 w-5" />
-            Compartir grupo
-          </DialogTitle>
+          <DialogTitle>Invitar a {groupName}</DialogTitle>
+          <DialogDescription>Pasa el código o el enlace a quien quieras añadir.</DialogDescription>
         </DialogHeader>
 
-        <div className="space-y-4 py-4">
-          <div className="text-center space-y-2">
-            <h3 className="text-xl font-semibold">{groupName}</h3>
-            <p className="text-sm text-muted-foreground">
-              Comparte este grupo con otros para que puedan unirse y ver los gastos
-            </p>
+        <div className="space-y-6 py-2">
+          <div className="space-y-2">
+            <p className="text-sm font-medium">Código del grupo</p>
+            <div className="flex items-center gap-2">
+              <div className="flex-1 rounded-md bg-muted py-3 text-center font-mono text-xl tracking-[0.3em]">
+                {groupCode}
+              </div>
+              <Button
+                variant="outline"
+                size="icon"
+                onClick={handleCopyCode}
+                aria-label="Copiar el código"
+                className="h-11 w-11 shrink-0"
+              >
+                {copiedCode ? <Check className="h-4 w-4 text-credit" /> : <Copy className="h-4 w-4" />}
+              </Button>
+            </div>
+            <p className="text-xs text-ink-2">Se escribe a mano desde «Unirme con un código».</p>
           </div>
 
-          <Card>
-            <CardContent className="pt-6 space-y-4">
-              <div className="space-y-2">
-                <label className="text-sm font-medium">Código del grupo</label>
-                <div className="flex items-center gap-2">
-                  <div className="flex-1 px-3 py-2 bg-muted rounded-md font-mono text-lg text-center">{groupCode}</div>
-                  <Button variant="outline" size="icon" onClick={handleCopyCode} className="shrink-0 bg-transparent">
-                    {copiedCode ? <Check className="h-4 w-4 text-green-600" /> : <Copy className="h-4 w-4" />}
-                  </Button>
-                </div>
-                <p className="text-xs text-muted-foreground">
-                  Los usuarios pueden usar este código para unirse al grupo
-                </p>
-              </div>
-
-              <div className="space-y-2">
-                <label className="text-sm font-medium">Enlace de invitación</label>
-                <div className="flex items-center gap-2">
-                  <Button
-                    variant="outline"
-                    className="flex-1 justify-start bg-muted hover:bg-muted/80"
-                    onClick={handleCopyUrl}
-                  >
-                    {copiedUrl ? (
-                      <>
-                        <Check className="h-4 w-4 text-green-600 mr-2" />
-                        <span className="text-sm">Enlace copiado</span>
-                      </>
-                    ) : (
-                      <>
-                        <Copy className="h-4 w-4 mr-2" />
-                        <span className="text-sm">Copiar enlace de invitación</span>
-                      </>
-                    )}
-                  </Button>
-                </div>
-                <p className="text-xs text-muted-foreground">
-                  Comparte este enlace para que otros puedan unirse directamente
-                </p>
-              </div>
-            </CardContent>
-          </Card>
+          <div className="space-y-2">
+            <p className="text-sm font-medium">Enlace de invitación</p>
+            <Button variant="outline" className="h-11 w-full justify-start" onClick={handleCopyUrl}>
+              {copiedUrl ? (
+                <Check className="h-4 w-4 text-credit" />
+              ) : (
+                <Copy className="h-4 w-4" />
+              )}
+              {copiedUrl ? "Enlace copiado" : "Copiar enlace"}
+            </Button>
+            <p className="text-xs text-ink-2">Abre el grupo directamente, sin escribir el código.</p>
+          </div>
         </div>
       </DialogContent>
     </Dialog>

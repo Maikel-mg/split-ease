@@ -14,10 +14,8 @@ export function ValidationProgress({ state }: ValidationProgressProps) {
   return (
     <div
       data-tour="validation-progress"
-      className={`flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-xs font-medium whitespace-nowrap ${
-        state.isComplete
-          ? "border-primary/30 bg-primary/10 text-primary"
-          : "border-amber-500/30 bg-amber-500/10 text-amber-600"
+      className={`flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-bold whitespace-nowrap ${
+        state.isComplete ? "bg-muted text-ink" : "bg-warning-surface text-warning"
       }`}
       title={state.isComplete ? "Todos han validado" : "Todavía faltan miembros por validar"}
     >

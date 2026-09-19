@@ -12,7 +12,7 @@ export default function ThemeColorUpdater() {
 
     const updateColor = () => {
       const isDark = resolvedTheme === 'dark'
-      meta.setAttribute('content', isDark ? '#0f172a' : '#f8f9fa')
+      meta.setAttribute('content', isDark ? '#131417' : '#fbfbfa')
     }
 
     updateColor()

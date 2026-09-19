@@ -39,8 +39,8 @@ export function EditGroupTitleDialog({ group, open, onOpenChange, onGroupUpdated
   const handleSave = async () => {
     if (!newTitle.trim()) {
       toast({
-        title: 'Error',
-        description: 'El nombre del grupo no puede estar vacío.',
+        title: 'El nombre no puede estar vacío',
+        description: 'Escribe un nombre para el grupo.',
         variant: 'destructive',
       })
       return
@@ -59,8 +59,8 @@ export function EditGroupTitleDialog({ group, open, onOpenChange, onGroupUpdated
     } catch (error: any) {
       console.error('Error updating group name:', error)
       toast({
-        title: 'Error',
-        description: error.message || 'No se pudo actualizar el nombre del grupo.',
+        title: 'No se pudo actualizar el grupo',
+        description: error.message || 'Inténtalo de nuevo en unos segundos.',
         variant: 'destructive',
       })
     } finally {
@@ -72,10 +72,11 @@ export function EditGroupTitleDialog({ group, open, onOpenChange, onGroupUpdated
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
-          <DialogTitle>Cambiar nombre del grupo</DialogTitle>
-          <DialogDescription>Cambia el nombre de tu grupo aquí. Haz clic en guardar cuando hayas terminado.</DialogDescription>
+          <DialogTitle>Ajustes del grupo</DialogTitle>
+          <DialogDescription>Cambia el nombre y si es un grupo privado.</DialogDescription>
         </DialogHeader>
-        <div className="grid gap-4 py-4">
+
+        <div className="grid gap-5 py-2">
           <div className="space-y-2">
             <Label htmlFor="title">Nombre del grupo</Label>
             <Input
@@ -83,24 +84,28 @@ export function EditGroupTitleDialog({ group, open, onOpenChange, onGroupUpdated
               value={newTitle}
               onChange={(e) => setNewTitle(e.target.value)}
               placeholder="Nombre del grupo"
+              className="h-11"
             />
           </div>
 
-          <div className="flex items-center space-x-2">
-            <Checkbox id="edit-isPrivate" checked={isPrivate} onCheckedChange={(checked) => setIsPrivate(checked as boolean)} />
-            <div className="grid gap-1.5 leading-none">
-               <Label
-                htmlFor="edit-isPrivate"
-                className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-               >
-                 Grupo privado
-               </Label>
-               <p className="text-xs text-muted-foreground">
-                 Si activas esta opción, los miembros solo verán los gastos en los que participan.
-               </p>
+          <div className="flex items-start gap-3">
+            <Checkbox
+              id="edit-isPrivate"
+              className="mt-0.5"
+              checked={isPrivate}
+              onCheckedChange={(checked) => setIsPrivate(checked as boolean)}
+            />
+            <div className="space-y-1 leading-none">
+              <Label htmlFor="edit-isPrivate" className="cursor-pointer">
+                Grupo privado
+              </Label>
+              <p className="text-xs text-ink-2">
+                Cada miembro solo verá los gastos en los que participa.
+              </p>
             </div>
           </div>
         </div>
+
         <DialogFooter>
           <Button variant="outline" onClick={() => onOpenChange(false)}>Cancelar</Button>
           <Button onClick={handleSave} disabled={isLoading}>
