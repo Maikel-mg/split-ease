@@ -63,7 +63,7 @@ export default function GroupPage() {
   const activeTab = selectedTab ?? (showValidation ? "status" : "balances")
 
   // Five tabs need a tighter label than three.
-  const tabTriggerClass = showValidation ? "text-xs px-1" : "text-sm"
+  const tabTriggerClass = showValidation ? "text-xs" : "text-sm"
 
   useEffect(() => {
     setSearchQuery("")
@@ -223,7 +223,7 @@ export default function GroupPage() {
           />
 
           <Tabs value={activeTab} className="w-full" onValueChange={setSelectedTab}>
-            <TabsList className={`grid w-full ${showValidation ? "grid-cols-5" : "grid-cols-3"} h-11`}>
+            <TabsList className={`grid w-full ${showValidation ? "grid-cols-5" : "grid-cols-3"}`}>
               {showValidation && (
                 <TabsTrigger value="status" data-tour="tab-status" className={tabTriggerClass}>
                   Mi estado
@@ -293,6 +293,7 @@ export default function GroupPage() {
                 debts={filteredDebts}
                 groupId={groupId}
                 payments={payments}
+                userMemberName={userMemberName}
                 onPaymentsRegistered={handlePaymentsRegistered}
               />
             </TabsContent>

@@ -4,8 +4,8 @@
   "description": "Gestiona gastos compartidos entre amigos y familiares",
   "start_url": "/",
   "display": "standalone",
-  "background_color": "#ffffff",
-  "theme_color": "#0070f3",
+  "background_color": "#fbfbfa",
+  "theme_color": "#fbfbfa",
   "orientation": "portrait",
   "icons": [
     {

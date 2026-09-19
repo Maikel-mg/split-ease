@@ -1,12 +1,18 @@
 import type React from "react"
 import type { Metadata } from "next"
-import { GeistSans } from "geist/font/sans"
 import { GeistMono } from "geist/font/mono"
+import { Gabarito } from "next/font/google"
 import { Analytics } from "@vercel/analytics/next"
 import "./globals.css"
 import { Suspense } from "react"
 import { ThemeProvider } from "@/components/theme-provider"
 import ThemeColorUpdater from "@/components/theme-color-updater"
+
+const gabarito = Gabarito({
+  subsets: ["latin"],
+  variable: "--font-gabarito",
+  display: "swap",
+})
 
 export const metadata: Metadata = {
   title: "Gastos Compartidos - Gestiona gastos grupales",
@@ -21,7 +27,7 @@ export const metadata: Metadata = {
   formatDetection: {
     telephone: false,
   },
-  themeColor: "#0070f3",
+  themeColor: "#fbfbfa",
   viewport: {
     width: "device-width",
     initialScale: 1,
@@ -36,7 +42,7 @@ export default function RootLayout({
   children: React.ReactNode
 }>) {
   return (
-    <html lang="es" className={`${GeistSans.variable} ${GeistMono.variable}`} suppressHydrationWarning>
+    <html lang="es" className={`${gabarito.variable} ${GeistMono.variable}`} suppressHydrationWarning>
       <head>
         <link rel="manifest" href="/manifest.json" />
         <link rel="apple-touch-icon" href="/icon-192.jpg" />
@@ -44,7 +50,7 @@ export default function RootLayout({
         <meta name="apple-mobile-web-app-status-bar-style" content="default" />
         <meta name="apple-mobile-web-app-title" content="Gastos" />
         <meta name="mobile-web-app-capable" content="yes" />
-        <meta name="theme-color" content="#0070f3" />
+        <meta name="theme-color" content="#fbfbfa" />
       </head>
       <body className="font-sans">
         <ThemeProvider attribute="class" defaultTheme="system" enableSystem={true} storageKey="theme">

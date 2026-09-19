@@ -3,7 +3,7 @@
 import type React from "react"
 
 import { useState } from "react"
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -26,15 +26,16 @@ export function AddMemberDialog({ group, onMemberAdded, open, onOpenChange }: Ad
     e.preventDefault()
 
     if (!memberName.trim()) {
-      setError("El nombre es requerido")
+      setError("Escribe un nombre.")
       return
     }
 
-    // Check if member already exists
-    const memberExists = group.members.some((m) => m.name.toLowerCase() === memberName.trim().toLowerCase())
+    const memberExists = group.members.some(
+      (m) => m.name.toLowerCase() === memberName.trim().toLowerCase()
+    )
 
     if (memberExists) {
-      setError("Este nombre ya existe en el grupo")
+      setError("Ya hay alguien con ese nombre en el grupo.")
       return
     }
 
@@ -48,7 +49,7 @@ export function AddMemberDialog({ group, onMemberAdded, open, onOpenChange }: Ad
       setMemberName("")
       onMemberAdded()
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Error al agregar persona")
+      setError(err instanceof Error ? err.message : "No se pudo añadir a la persona")
     } finally {
       setLoading(false)
     }
@@ -58,30 +59,34 @@ export function AddMemberDialog({ group, onMemberAdded, open, onOpenChange }: Ad
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
-          <DialogTitle>Agregar nueva persona</DialogTitle>
+          <DialogTitle>Añadir persona</DialogTitle>
+          <DialogDescription>
+            Se añade al grupo sin cuenta. Podrá entrar con el código del grupo.
+          </DialogDescription>
         </DialogHeader>
-        <form onSubmit={handleSubmit} className="space-y-4">
+        <form onSubmit={handleSubmit} className="space-y-5">
           <div className="space-y-2">
-            <Label htmlFor="memberName">Nombre de la persona</Label>
+            <Label htmlFor="memberName">Nombre</Label>
             <Input
               id="memberName"
-              placeholder="Ej: Juan"
+              placeholder="Juan"
               value={memberName}
               onChange={(e) => {
                 setMemberName(e.target.value)
                 setError("")
               }}
               disabled={loading}
+              className="h-11"
               autoFocus
             />
-            {error && <p className="text-sm text-destructive">{error}</p>}
+            {error && <p className="text-sm text-debit">{error}</p>}
           </div>
           <div className="flex justify-end gap-2">
             <Button type="button" variant="outline" onClick={() => onOpenChange(false)} disabled={loading}>
               Cancelar
             </Button>
             <Button type="submit" disabled={loading}>
-              {loading ? "Agregando..." : "Agregar"}
+              {loading ? "Añadiendo..." : "Añadir"}
             </Button>
           </div>
         </form>

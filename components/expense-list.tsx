@@ -1,7 +1,8 @@
 "use client"
 
-import { Card, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
+import { MemberDot } from "@/components/member-dot"
+import { formatMoney } from "@/lib/format"
 import { Trash2, Pencil, ImageIcon } from "lucide-react"
 import type { Expense } from "@/core/entities/Expense"
 import type { Group } from "@/core/entities/Group"
@@ -56,7 +57,6 @@ export function ExpenseList({ group, expenses, onExpenseDeleted, onExpenseEdit }
     const yesterday = new Date(today)
     yesterday.setDate(yesterday.getDate() - 1)
 
-    // Reset time to compare only dates
     today.setHours(0, 0, 0, 0)
     yesterday.setHours(0, 0, 0, 0)
     date.setHours(0, 0, 0, 0)
@@ -96,59 +96,73 @@ export function ExpenseList({ group, expenses, onExpenseDeleted, onExpenseEdit }
 
   if (expenses.length === 0) {
     return (
-      <Card>
-        <CardContent className="py-12 text-center">
-          <p className="text-muted-foreground">No hay gastos registrados aún</p>
-          <p className="text-sm text-muted-foreground mt-1">Agrega tu primer gasto para comenzar</p>
-        </CardContent>
-      </Card>
+      <div className="py-10 text-center">
+        <p className="font-medium">No hay gastos registrados aún</p>
+        <p className="mt-1 text-sm text-ink-2">Añade el primer gasto del grupo para empezar.</p>
+      </div>
     )
   }
 
   const groupedExpenses = groupExpensesByDate(expenses)
 
   return (
-    <div className="space-y-3">
+    <div className="space-y-6">
       {groupedExpenses.map(([dateKey, dateExpenses]) => (
-        <div key={dateKey} className="space-y-1">
-          <h2 className="text-sm font-semibold text-muted-foreground px-1 mb-1">{formatDateHeader(dateKey)}</h2>
+        <section key={dateKey}>
+          <h2 className="mb-1 text-xs font-semibold text-ink-2">
+            {formatDateHeader(dateKey)}
+          </h2>
 
-          {dateExpenses.map((expense) => (
-            <Card key={expense.id}>
-              <CardContent className="p-2">
-                <div className="flex items-start justify-between gap-2">
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2 mb-0.5">
-                      <h3 className="font-semibold text-base">{expense.description}</h3>
-                      {expense.imageUrl && <ImageIcon className="h-4 w-4 text-muted-foreground flex-shrink-0" />}
+          <ul className="divide-y divide-rule">
+            {dateExpenses.map((expense) => {
+              const payer = getMemberName(expense.paidBy)
+
+              return (
+                <li key={expense.id} className="flex items-center gap-3 py-4">
+                  <MemberDot name={payer} className="size-3" />
+
+                  <div className="min-w-0 flex-1">
+                    <div className="flex items-center gap-1.5">
+                      <h3 className="truncate font-medium">{expense.description}</h3>
+                      {expense.imageUrl && (
+                        <ImageIcon className="h-4 w-4 flex-shrink-0 text-ink-2" />
+                      )}
                     </div>
-                    <p className="text-sm text-muted-foreground mb-1">Pagado por: {getMemberName(expense.paidBy)}</p>
-                    <p className="text-xs text-muted-foreground">
-                      Participantes: {getParticipantText(expense.participants)}
+                    <p className="truncate text-sm text-ink-2">
+                      Pagó {payer} · {getParticipantText(expense.participants)}
                     </p>
                   </div>
-                  <div className="flex items-start gap-2 flex-shrink-0">
-                    <div className="text-right">
-                      <p className="text-xl font-bold">{expense.amount.toFixed(2)}€</p>
-                    </div>
-                    <Button variant="ghost" size="icon" onClick={() => onExpenseEdit(expense)} className="h-8 w-8">
-                      <Pencil className="h-4 w-4 text-muted-foreground" />
+
+                  <p className="tabular-nums flex-shrink-0 font-bold">
+                    {formatMoney(expense.amount)}
+                  </p>
+
+                  <div className="flex flex-shrink-0 items-center">
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      aria-label={`Editar ${expense.description}`}
+                      onClick={() => onExpenseEdit(expense)}
+                      className="h-8 w-8"
+                    >
+                      <Pencil className="h-4 w-4 text-ink-2" />
                     </Button>
                     <Button
                       variant="ghost"
                       size="icon"
+                      aria-label={`Eliminar ${expense.description}`}
                       onClick={() => handleDelete(expense.id)}
                       disabled={deletingId === expense.id}
                       className="h-8 w-8"
                     >
-                      <Trash2 className="h-4 w-4 text-destructive" />
+                      <Trash2 className="h-4 w-4 text-ink-2" />
                     </Button>
                   </div>
-                </div>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
+                </li>
+              )
+            })}
+          </ul>
+        </section>
       ))}
     </div>
   )

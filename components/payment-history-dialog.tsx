@@ -2,7 +2,8 @@
 
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
 import { Button } from "@/components/ui/button"
-import { Card, CardContent } from "@/components/ui/card"
+import { MemberDot } from "@/components/member-dot"
+import { formatMoney } from "@/lib/format"
 import { Trash2 } from "lucide-react"
 import type { Payment } from "@/core/entities/Payment"
 import { useState } from "react"
@@ -34,8 +35,8 @@ export function PaymentHistoryDialog({ payments, onPaymentDeleted }: PaymentHist
     } catch (error) {
       console.error("[v0] Error deleting payment:", error)
       toast({
-        title: "Error",
-        description: "No se pudo cancelar el pago",
+        title: "No se pudo cancelar el pago",
+        description: "Inténtalo de nuevo en unos segundos.",
         variant: "destructive",
       })
     } finally {
@@ -56,47 +57,50 @@ export function PaymentHistoryDialog({ payments, onPaymentDeleted }: PaymentHist
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button variant="link" className="text-xs text-muted-foreground h-auto p-0">
+        <Button variant="link" className="text-xs text-ink-2 h-auto p-0">
           Ver historial de pagos ({payments.length})
         </Button>
       </DialogTrigger>
       <DialogContent className="max-w-md max-h-[80vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>Historial de Pagos</DialogTitle>
+          <DialogTitle>Historial de pagos</DialogTitle>
         </DialogHeader>
-        <div className="space-y-2 mt-4">
-          {payments.length === 0 ? (
-            <p className="text-center text-muted-foreground py-8">No hay pagos registrados</p>
-          ) : (
-            payments.map((payment) => (
-              <Card key={payment.id}>
-                <CardContent className="p-2">
-                  <div className="flex items-start justify-between gap-2">
-                    <div className="flex-1 min-w-0">
-                      <div className="text-sm font-semibold truncate">
-                        De <span className="font-bold">{payment.from}</span> → Para{" "}
-                        <span className="font-bold">{payment.to}</span>
-                      </div>
-                      <div className="text-xs text-muted-foreground mt-0.5">{formatDate(payment.registeredAt)}</div>
-                    </div>
-                    <div className="flex items-center gap-2 flex-shrink-0">
-                      <span className="text-sm font-bold">{payment.amount.toFixed(2)}€</span>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        className="h-8 w-8 text-destructive hover:text-destructive"
-                        onClick={() => handleDeletePayment(payment.id)}
-                        disabled={deletingId === payment.id}
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
-                    </div>
+
+        {payments.length === 0 ? (
+          <p className="py-8 text-center text-ink-2">No hay pagos registrados.</p>
+        ) : (
+          <ul className="divide-y divide-rule">
+            {payments.map((payment) => (
+              <li key={payment.id} className="flex items-start gap-2 py-3">
+                <div className="min-w-0 flex-1">
+                  <div className="flex items-center gap-2 text-sm">
+                    <MemberDot name={payment.from} />
+                    <span className="truncate">{payment.from}</span>
+                    <span aria-hidden="true" className="text-ink-2">→</span>
+                    <MemberDot name={payment.to} />
+                    <span className="truncate">{payment.to}</span>
                   </div>
-                </CardContent>
-              </Card>
-            ))
-          )}
-        </div>
+                  <p className="mt-0.5 text-xs text-ink-2">
+                    {formatDate(payment.registeredAt)}
+                  </p>
+                </div>
+                <div className="flex flex-shrink-0 items-center gap-1">
+                  <span className="tabular-nums font-bold">{formatMoney(payment.amount)}</span>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    aria-label={`Cancelar el pago de ${payment.from} a ${payment.to}`}
+                    className="h-8 w-8"
+                    onClick={() => handleDeletePayment(payment.id)}
+                    disabled={deletingId === payment.id}
+                  >
+                    <Trash2 className="h-4 w-4 text-ink-2" />
+                  </Button>
+                </div>
+              </li>
+            ))}
+          </ul>
+        )}
       </DialogContent>
     </Dialog>
   )
