@@ -2,9 +2,10 @@
 
 import { useState } from "react"
 import { Button } from "@/components/ui/button"
-import { Card, CardContent } from "@/components/ui/card"
+import { MemberDot } from "@/components/member-dot"
 import { MemberExpensesDialog } from "@/components/member-expenses-dialog"
 import { InfoHint } from "@/components/info-hint"
+import { formatMoney } from "@/lib/format"
 import { AlertCircle, CheckCircle2, Loader2, RotateCcw } from "lucide-react"
 import type { Group } from "@/core/entities/Group"
 import type { Expense } from "@/core/entities/Expense"
@@ -31,7 +32,6 @@ export function MyStatusTab({
   group,
   expenses,
   payments,
-  balances,
   debts,
   validationState,
   myValidation,
@@ -47,144 +47,132 @@ export function MyStatusTab({
 
   if (!member) {
     return (
-      <Card>
-        <CardContent className="p-4 text-sm text-muted-foreground">
-          No sabemos quién eres en este grupo. Abre el enlace de invitación del grupo para identificarte.
-        </CardContent>
-      </Card>
+      <p className="py-6 text-sm text-ink-2">
+        No sabemos quién eres en este grupo. Abre el enlace de invitación del grupo para
+        identificarte.
+      </p>
     )
   }
 
-  const netBalance = balances.find((b) => b.memberName === member.name)?.netBalance ?? 0
   const iOwe = debts.filter((debt) => debt.from === member.name)
   const owedToMe = debts.filter((debt) => debt.to === member.name)
   const canValidate = validationState.eligibleMemberIds.includes(member.id)
   const isStale = validationState.staleMemberIds.includes(member.id)
 
   return (
-    <div className="space-y-4">
-      <Card>
-        <CardContent className="p-4 space-y-3">
+    <div className="space-y-8">
+      <section className="space-y-4">
+        {iOwe.length > 0 && (
           <div>
-            <p className="text-sm text-muted-foreground">Tu saldo</p>
-            <p
-              className={`text-2xl font-bold ${
-                netBalance > 0.01 ? "text-primary" : netBalance < -0.01 ? "text-destructive" : ""
-              }`}
-            >
-              {netBalance > 0.01 ? `+${netBalance.toFixed(2)}€` : `${netBalance.toFixed(2)}€`}
-            </p>
-            <p className="text-xs text-muted-foreground">
-              {netBalance > 0.01
-                ? "Te tienen que pagar"
-                : netBalance < -0.01
-                  ? "Tienes que pagar"
-                  : "Estás al día"}
-            </p>
-          </div>
-
-          {iOwe.length > 0 && (
-            <div className="space-y-1 pt-3 border-t">
-              <p className="text-xs font-medium text-muted-foreground">Tienes que pagar a</p>
+            <p className="text-sm font-medium text-ink-2">Tienes que pagar a</p>
+            <ul className="mt-1 divide-y divide-rule">
               {iOwe.map((debt, index) => (
-                <div key={`${debt.to}-${index}`} className="flex justify-between gap-2 text-sm">
-                  <span className="truncate">{debt.to}</span>
-                  <span className="font-semibold whitespace-nowrap">{debt.amount.toFixed(2)}€</span>
-                </div>
-              ))}
-            </div>
-          )}
-
-          {owedToMe.length > 0 && (
-            <div className="space-y-1 pt-3 border-t">
-              <p className="text-xs font-medium text-muted-foreground">Te tienen que pagar</p>
-              {owedToMe.map((debt, index) => (
-                <div key={`${debt.from}-${index}`} className="flex justify-between gap-2 text-sm">
-                  <span className="truncate">{debt.from}</span>
-                  <span className="font-semibold text-primary whitespace-nowrap">
-                    {debt.amount.toFixed(2)}€
+                <li key={`${debt.to}-${index}`} className="flex items-center gap-3 py-3">
+                  <MemberDot name={debt.to} />
+                  <span className="flex-1 truncate">{debt.to}</span>
+                  <span className="tabular-nums font-bold text-debit">
+                    {formatMoney(debt.amount)}
                   </span>
-                </div>
+                </li>
               ))}
-            </div>
-          )}
-
-          <Button variant="outline" className="w-full" onClick={() => setDetailsOpen(true)}>
-            Ver mis gastos y pagos
-          </Button>
-        </CardContent>
-      </Card>
-
-      <Card>
-        <CardContent className="p-4 space-y-3">
-          <div className="flex items-center gap-1.5">
-            <h2 className="text-sm font-semibold">Validación</h2>
-            <InfoHint label="Qué es la validación">
-              Antes de pagar, cada persona revisa y confirma que sus gastos y pagos son correctos.
-              Nadie debería pagar hasta que todos hayan validado.
-            </InfoHint>
+            </ul>
           </div>
+        )}
 
-          {validationState.hasExpenses ? (
-            canValidate ? (
-              <>
-                {myValidation ? (
-                  <div className="flex items-center gap-2 text-sm text-primary">
-                    <CheckCircle2 className="h-4 w-4 flex-shrink-0" />
-                    <span>Has validado tus gastos y pagos</span>
-                  </div>
-                ) : (
-                  <p className="text-sm text-muted-foreground">
-                    {isStale
-                      ? "Validaste, pero ha cambiado algo desde entonces. Revísalo y vuelve a validar."
-                      : "Revisa que tus gastos y pagos sean correctos. Nadie debería pagar hasta que todo el grupo haya validado."}
-                  </p>
-                )}
+        {owedToMe.length > 0 && (
+          <div>
+            <p className="text-sm font-medium text-ink-2">Te tienen que pagar</p>
+            <ul className="mt-1 divide-y divide-rule">
+              {owedToMe.map((debt, index) => (
+                <li key={`${debt.from}-${index}`} className="flex items-center gap-3 py-3">
+                  <MemberDot name={debt.from} />
+                  <span className="flex-1 truncate">{debt.from}</span>
+                  <span className="tabular-nums font-bold text-credit">
+                    {formatMoney(debt.amount)}
+                  </span>
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
 
-                {myValidation ? (
-                  <Button
-                    data-tour="validate-action"
-                    variant="outline"
-                    className="w-full"
-                    onClick={onRetire}
-                    disabled={saving}
-                  >
-                    {saving ? (
-                      <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                    ) : (
-                      <RotateCcw className="h-4 w-4 mr-2" />
-                    )}
-                    Retirar la validación
-                  </Button>
-                ) : (
-                  <Button
-                    data-tour="validate-action"
-                    className="w-full"
-                    onClick={onValidate}
-                    disabled={saving}
-                  >
-                    {saving && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
-                    He revisado mis gastos y pagos
-                  </Button>
-                )}
-              </>
-            ) : (
-              <p className="text-sm text-muted-foreground">
-                No participas en ningún gasto de este grupo, así que no hay nada que validar.
-              </p>
-            )
+        {iOwe.length === 0 && owedToMe.length === 0 && (
+          <p className="text-ink-2">No tienes pagos pendientes en este grupo.</p>
+        )}
+
+        <Button variant="outline" className="w-full" onClick={() => setDetailsOpen(true)}>
+          Ver mis gastos y pagos
+        </Button>
+      </section>
+
+      <section className="space-y-3">
+        <div className="flex items-center gap-1.5">
+          <h2 className="text-sm font-bold">Validación</h2>
+          <InfoHint label="Qué es la validación">
+            Antes de pagar, cada persona revisa y confirma que sus gastos y pagos son correctos.
+            Nadie debería pagar hasta que todos hayan validado.
+          </InfoHint>
+        </div>
+
+        {validationState.hasExpenses ? (
+          canValidate ? (
+            <>
+              {myValidation ? (
+                <div className="flex items-center gap-2 text-sm">
+                  <CheckCircle2 className="h-4 w-4 flex-shrink-0" />
+                  <span>Has validado tus gastos y pagos.</span>
+                </div>
+              ) : (
+                <p className="text-sm text-ink-2">
+                  {isStale
+                    ? "Validaste, pero ha cambiado algo desde entonces. Revísalo y vuelve a validar."
+                    : "Revisa que tus gastos y pagos sean correctos. Nadie debería pagar hasta que todo el grupo haya validado."}
+                </p>
+              )}
+
+              {myValidation ? (
+                <Button
+                  data-tour="validate-action"
+                  variant="outline"
+                  className="w-full"
+                  onClick={onRetire}
+                  disabled={saving}
+                >
+                  {saving ? (
+                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                  ) : (
+                    <RotateCcw className="h-4 w-4 mr-2" />
+                  )}
+                  Retirar la validación
+                </Button>
+              ) : (
+                <Button
+                  data-tour="validate-action"
+                  className="h-12 w-full text-base font-bold"
+                  onClick={onValidate}
+                  disabled={saving}
+                >
+                  {saving && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
+                  He revisado mis gastos y pagos
+                </Button>
+              )}
+            </>
           ) : (
-            <p className="text-sm text-muted-foreground">Todavía no hay gastos que validar.</p>
-          )}
+            <p className="text-sm text-ink-2">
+              No participas en ningún gasto de este grupo, así que no hay nada que validar.
+            </p>
+          )
+        ) : (
+          <p className="text-sm text-ink-2">Todavía no hay gastos que validar.</p>
+        )}
 
-          {error && (
-            <div className="flex items-start gap-2 text-sm text-destructive">
-              <AlertCircle className="h-4 w-4 mt-0.5 flex-shrink-0" />
-              <span>{error}</span>
-            </div>
-          )}
-        </CardContent>
-      </Card>
+        {error && (
+          <div className="flex items-start gap-2 text-sm text-debit">
+            <AlertCircle className="h-4 w-4 mt-0.5 flex-shrink-0" />
+            <span>{error}</span>
+          </div>
+        )}
+      </section>
 
       <MemberExpensesDialog
         open={detailsOpen}

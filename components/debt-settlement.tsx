@@ -1,9 +1,9 @@
 "use client"
 
-import { Card, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Checkbox } from "@/components/ui/checkbox"
-import { CheckCircle2 } from "lucide-react"
+import { MemberDot } from "@/components/member-dot"
+import { formatMoney } from "@/lib/format"
 import type { Debt } from "@/core/entities/Balance"
 import type { Payment } from "@/core/entities/Payment"
 import { PaymentHistoryDialog } from "./payment-history-dialog"
@@ -15,10 +15,17 @@ interface DebtSettlementProps {
   debts: Debt[]
   groupId: string
   payments: Payment[]
+  userMemberName?: string | null
   onPaymentsRegistered: () => void
 }
 
-export function DebtSettlement({ debts, groupId, payments, onPaymentsRegistered }: DebtSettlementProps) {
+export function DebtSettlement({
+  debts,
+  groupId,
+  payments,
+  userMemberName,
+  onPaymentsRegistered,
+}: DebtSettlementProps) {
   const [selectedDebts, setSelectedDebts] = useState<Set<number>>(new Set())
   const [isSaving, setIsSaving] = useState(false)
   const { toast } = useToast()
@@ -31,6 +38,15 @@ export function DebtSettlement({ debts, groupId, payments, onPaymentsRegistered 
       newSelected.add(index)
     }
     setSelectedDebts(newSelected)
+  }
+
+  // The colour repeats the balance rule: red what you pay, green what you receive,
+  // ink everything that is between other people.
+  const amountClass = (debt: Debt) => {
+    if (!userMemberName) return "text-ink"
+    if (debt.from === userMemberName) return "text-debit"
+    if (debt.to === userMemberName) return "text-credit"
+    return "text-ink"
   }
 
   const handleSavePayments = async () => {
@@ -51,16 +67,13 @@ export function DebtSettlement({ debts, groupId, payments, onPaymentsRegistered 
         description: `Se ${selectedDebts.size === 1 ? "ha registrado 1 pago" : `han registrado ${selectedDebts.size} pagos`} correctamente`,
       })
 
-      // Clear selection after saving
       setSelectedDebts(new Set())
-
-      // Notify parent to refresh data
       onPaymentsRegistered()
     } catch (error) {
       console.error("[v0] Error registering payments:", error)
       toast({
-        title: "Error",
-        description: "No se pudieron registrar los pagos",
+        title: "No se pudieron registrar los pagos",
+        description: "Inténtalo de nuevo en unos segundos.",
         variant: "destructive",
       })
     } finally {
@@ -70,50 +83,69 @@ export function DebtSettlement({ debts, groupId, payments, onPaymentsRegistered 
 
   if (debts.length === 0) {
     return (
-      <Card>
-        <CardContent className="py-12 text-center space-y-3">
-          <CheckCircle2 className="w-12 h-12 text-primary mx-auto" />
-          <p className="text-muted-foreground">No hay deudas pendientes</p>
-          <p className="text-sm text-muted-foreground">Todos los gastos están sin deudas</p>
-        </CardContent>
-      </Card>
+      <div className="py-10 text-center">
+        <p className="text-lg font-bold">No hay deudas pendientes</p>
+        <p className="mt-1 text-sm text-ink-2">Todos los saldos están a cero.</p>
+      </div>
     )
   }
 
-  return (
-    <div className="space-y-4">
-      <div className="space-y-2">
-        {debts.map((debt, index) => (
-          <Card key={index} className="overflow-hidden">
-            <CardContent className="p-4">
-              <div className="flex items-center gap-3">
-                <Checkbox
-                  checked={selectedDebts.has(index)}
-                  onCheckedChange={() => toggleDebt(index)}
-                  className="flex-shrink-0 border-2 border-muted-foreground/30 bg-background"
-                  disabled={isSaving}
-                />
-                <div className="flex-1 min-w-0">
-                  <div className="text-sm font-semibold truncate">
-                    De <span className="font-bold">{debt.from}</span>
-                  </div>
-                  <div className="text-sm text-muted-foreground truncate">
-                    Para <span className="font-medium">{debt.to}</span>
-                  </div>
-                </div>
-                <div className="text-lg font-bold text-foreground flex-shrink-0">{debt.amount.toFixed(2)}€</div>
-              </div>
-            </CardContent>
-          </Card>
-        ))}
-      </div>
+  const count = selectedDebts.size
 
-      <Button className="w-full" size="lg" disabled={selectedDebts.size === 0 || isSaving} onClick={handleSavePayments}>
-        {isSaving ? "Guardando..." : "Guardar pagos"}
+  return (
+    <div>
+      <p className="text-sm text-ink-2">
+        {debts.length === 1 ? "Saldar con un pago" : `Saldar con ${debts.length} pagos`}
+      </p>
+
+      <ul className="mt-3 divide-y divide-rule">
+        {debts.map((debt, index) => (
+          <li key={index}>
+            <div
+              onClick={() => !isSaving && toggleDebt(index)}
+              className="flex cursor-pointer items-center gap-3 py-4"
+            >
+              <Checkbox
+                checked={selectedDebts.has(index)}
+                onCheckedChange={() => toggleDebt(index)}
+                disabled={isSaving}
+                className="pointer-events-none flex-shrink-0"
+                aria-label={`Saldar ${formatMoney(debt.amount)} de ${debt.from} a ${debt.to}`}
+              />
+              <div className="flex min-w-0 flex-1 items-center gap-1.5">
+                <MemberDot name={debt.from} />
+                <span className="truncate">{debt.from}</span>
+                <span aria-hidden="true" className="px-0.5 text-ink-2">
+                  →
+                </span>
+                <MemberDot name={debt.to} />
+                <span className="truncate">{debt.to}</span>
+              </div>
+              <span className={`tabular-nums text-lg font-bold flex-shrink-0 ${amountClass(debt)}`}>
+                {formatMoney(debt.amount)}
+              </span>
+            </div>
+          </li>
+        ))}
+      </ul>
+
+      <Button
+        className="mt-6 h-12 w-full text-base font-bold"
+        size="lg"
+        disabled={count === 0 || isSaving}
+        onClick={handleSavePayments}
+      >
+        {isSaving
+          ? "Registrando..."
+          : count === 0
+            ? "Registrar pagos"
+            : count === 1
+              ? "Registrar 1 pago"
+              : `Registrar ${count} pagos`}
       </Button>
 
       {payments.length > 0 && (
-        <div className="flex justify-center pt-2">
+        <div className="flex justify-center pt-4">
           <PaymentHistoryDialog payments={payments} onPaymentDeleted={onPaymentsRegistered} />
         </div>
       )}

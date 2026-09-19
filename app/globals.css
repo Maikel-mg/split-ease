@@ -3,80 +3,115 @@
 
 @custom-variant dark (&:is(.dark *));
 
+/* Split-Ease — la gente es la estructura, el dinero es el color.
+   El color tiene dos significados y solo dos:
+   - verde / rojo  -> direccion de un saldo (te deben / debes)
+   - color de persona -> identifica a un miembro, siempre el mismo */
 :root {
-  --background: #f8f9fa;
-  --foreground: #1a1a1a;
-  --card: #ffffff;
-  --card-foreground: #1a1a1a;
-  --popover: #ffffff;
-  --popover-foreground: #1a1a1a;
-  --primary: #00d26a;
-  --primary-foreground: #ffffff;
-  --secondary: #f0f0f0;
-  --secondary-foreground: #1a1a1a;
-  --muted: #f5f5f5;
-  --muted-foreground: #6b7280;
-  --accent: #00d26a;
-  --accent-foreground: #ffffff;
-  --destructive: #ef4444;
+  --paper: #fbfbfa;
+  --surface: #ffffff;
+  --ink: #16181c;
+  --ink-2: #62666d;
+  --rule: #e6e6e3;
+  --credit: #0b7d40;
+  --debit: #d92d20;
+  --warning: #8a5a00;
+  --warning-surface: #fbf3e0;
+
+  --background: var(--paper);
+  --foreground: var(--ink);
+  --card: var(--surface);
+  --card-foreground: var(--ink);
+  --popover: var(--surface);
+  --popover-foreground: var(--ink);
+  --primary: var(--ink);
+  --primary-foreground: var(--paper);
+  --secondary: #efefec;
+  --secondary-foreground: var(--ink);
+  --muted: #f1f1ee;
+  --muted-foreground: var(--ink-2);
+  --accent: #efefec;
+  --accent-foreground: var(--ink);
+  --destructive: var(--debit);
   --destructive-foreground: #ffffff;
-  --border: #e5e7eb;
-  --input: #ffffff;
-  --ring: #00d26a;
-  --chart-1: #00d26a;
-  --chart-2: #00d26a;
-  --chart-3: #fbbf24;
-  --chart-4: #ef4444;
-  --chart-5: #3b82f6;
-  --radius: 0.75rem;
-  --sidebar: #ffffff;
-  --sidebar-foreground: #1a1a1a;
-  --sidebar-primary: #f8f9fa;
-  --sidebar-primary-foreground: #1a1a1a;
-  --sidebar-accent: #00d26a;
-  --sidebar-accent-foreground: #ffffff;
-  --sidebar-border: #e5e7eb;
-  --sidebar-ring: #00d26a;
+  --border: var(--rule);
+  --input: var(--surface);
+  --ring: var(--ink);
+  --chart-1: var(--credit);
+  --chart-2: var(--ink);
+  --chart-3: var(--debit);
+  --chart-4: var(--warning);
+  --chart-5: var(--ink-2);
+  --radius: 0.625rem;
+  --sidebar: var(--surface);
+  --sidebar-foreground: var(--ink);
+  --sidebar-primary: var(--paper);
+  --sidebar-primary-foreground: var(--ink);
+  --sidebar-accent: var(--ink);
+  --sidebar-accent-foreground: var(--paper);
+  --sidebar-border: var(--rule);
+  --sidebar-ring: var(--ink);
 }
 
 .dark {
-  --background: #0f172a;
-  --foreground: #f8f9fa;
-  --card: #1e293b;
-  --card-foreground: #f8f9fa;
-  --popover: #1e293b;
-  --popover-foreground: #f8f9fa;
-  --primary: #00d26a;
-  --primary-foreground: #ffffff;
-  --secondary: #334155;
-  --secondary-foreground: #f8f9fa;
-  --muted: #334155;
-  --muted-foreground: #94a3b8;
-  --accent: #00d26a;
-  --accent-foreground: #ffffff;
-  --destructive: #ef4444;
-  --destructive-foreground: #ffffff;
-  --border: #334155;
-  --input: #1e293b;
-  --ring: #00d26a;
-  --chart-1: #00d26a;
-  --chart-2: #00d26a;
-  --chart-3: #fbbf24;
-  --chart-4: #ef4444;
-  --chart-5: #3b82f6;
-  --sidebar: #1e293b;
-  --sidebar-foreground: #f8f9fa;
-  --sidebar-primary: #0f172a;
-  --sidebar-primary-foreground: #f8f9fa;
-  --sidebar-accent: #00d26a;
-  --sidebar-accent-foreground: #ffffff;
-  --sidebar-border: #334155;
-  --sidebar-ring: #00d26a;
+  --paper: #131417;
+  --surface: #1b1d21;
+  --ink: #f4f4f2;
+  --ink-2: #a0a4aa;
+  --rule: #2c2f34;
+  --credit: #4ed18a;
+  --debit: #f8716a;
+  --warning: #f5c451;
+  --warning-surface: #2b2513;
+
+  --background: var(--paper);
+  --foreground: var(--ink);
+  --card: var(--surface);
+  --card-foreground: var(--ink);
+  --popover: var(--surface);
+  --popover-foreground: var(--ink);
+  --primary: var(--ink);
+  --primary-foreground: var(--paper);
+  --secondary: #24272c;
+  --secondary-foreground: var(--ink);
+  --muted: #232629;
+  --muted-foreground: var(--ink-2);
+  --accent: #24272c;
+  --accent-foreground: var(--ink);
+  --destructive: var(--debit);
+  --destructive-foreground: #1b1d21;
+  --border: var(--rule);
+  --input: var(--surface);
+  --ring: var(--ink);
+  --chart-1: var(--credit);
+  --chart-2: var(--ink);
+  --chart-3: var(--debit);
+  --chart-4: var(--warning);
+  --chart-5: var(--ink-2);
+  --sidebar: var(--surface);
+  --sidebar-foreground: var(--ink);
+  --sidebar-primary: var(--paper);
+  --sidebar-primary-foreground: var(--ink);
+  --sidebar-accent: var(--ink);
+  --sidebar-accent-foreground: var(--paper);
+  --sidebar-border: var(--rule);
+  --sidebar-ring: var(--ink);
 }
 
 @theme inline {
-  --font-sans: var(--font-geist-sans);
+  --font-sans: var(--font-gabarito);
   --font-mono: var(--font-geist-mono);
+
+  --color-paper: var(--paper);
+  --color-surface: var(--surface);
+  --color-ink: var(--ink);
+  --color-ink-2: var(--ink-2);
+  --color-rule: var(--rule);
+  --color-credit: var(--credit);
+  --color-debit: var(--debit);
+  --color-warning: var(--warning);
+  --color-warning-surface: var(--warning-surface);
+
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --color-card: var(--card);
@@ -122,9 +157,4 @@
   body {
     @apply bg-background text-foreground;
   }
-}
-
-/* Smooth theme transitions */
-* {
-  transition: background-color 0.2s ease, color 0.2s ease, border-color 0.2s ease;
 }

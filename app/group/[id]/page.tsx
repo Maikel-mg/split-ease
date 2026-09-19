@@ -11,6 +11,7 @@ import { BalanceSummary } from "@/components/balance-summary"
 import { DebtSettlement } from "@/components/debt-settlement"
 import { DanglingPaymentsBanner } from "@/components/dangling-payments-banner"
 import { GroupInfo } from "@/components/group-info"
+import { MyPosition } from "@/components/my-position"
 import { MyStatusTab } from "@/components/my-status-tab"
 import { ValidationList } from "@/components/validation-list"
 import { ValidationProgress } from "@/components/validation-progress"
@@ -63,7 +64,7 @@ export default function GroupPage() {
   const activeTab = selectedTab ?? (showValidation ? "status" : "balances")
 
   // Five tabs need a tighter label than three.
-  const tabTriggerClass = showValidation ? "text-xs px-1" : "text-sm"
+  const tabTriggerClass = showValidation ? "text-xs" : "text-sm"
 
   useEffect(() => {
     setSearchQuery("")
@@ -207,6 +208,8 @@ export default function GroupPage() {
         <div className="p-4 space-y-4">
           <GroupInfo group={group} userMemberName={userMemberName} />
 
+          <MyPosition balances={balances} userMemberName={userMemberName} />
+
           {showValidation && validationState && payments.length > 0 && !validationState.isComplete && (
             <DanglingPaymentsBanner
               validatedCount={validationState.validatedCount}
@@ -223,7 +226,7 @@ export default function GroupPage() {
           />
 
           <Tabs value={activeTab} className="w-full" onValueChange={setSelectedTab}>
-            <TabsList className={`grid w-full ${showValidation ? "grid-cols-5" : "grid-cols-3"} h-11`}>
+            <TabsList className={`grid w-full ${showValidation ? "grid-cols-5" : "grid-cols-3"}`}>
               {showValidation && (
                 <TabsTrigger value="status" data-tour="tab-status" className={tabTriggerClass}>
                   Mi estado
@@ -293,6 +296,7 @@ export default function GroupPage() {
                 debts={filteredDebts}
                 groupId={groupId}
                 payments={payments}
+                userMemberName={userMemberName}
                 onPaymentsRegistered={handlePaymentsRegistered}
               />
             </TabsContent>

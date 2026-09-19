@@ -10,6 +10,8 @@ import { getUserGroupsFromIdentities } from "@/app/actions/group-actions"
 import { getMyGroupIds, getUserMemberName } from "@/lib/hooks/use-user-identity"
 import { Checkbox } from "@/components/ui/checkbox"
 import { Label } from "@/components/ui/label"
+import { memberColor } from "@/lib/member-color"
+import { formatMoney } from "@/lib/format"
 
 interface GroupWithDetails {
   id: string
@@ -76,11 +78,11 @@ export default function MyGroupsPage() {
 
   const getBalanceDisplay = (balance: number) => {
     if (Math.abs(balance) < 0.01) {
-      return { text: "Sin Deudas", color: "text-muted-foreground" }
+      return { text: "Sin deudas", color: "text-ink-2" }
     } else if (balance > 0) {
-      return { text: `Te deben ${balance.toFixed(2)}€`, color: "text-[#10b981]" }
+      return { text: `Te deben ${formatMoney(balance)}`, color: "text-credit" }
     } else {
-      return { text: `Debes ${Math.abs(balance).toFixed(2)}€`, color: "text-[#ef4444]" }
+      return { text: `Debes ${formatMoney(Math.abs(balance))}`, color: "text-debit" }
     }
   }
 
@@ -92,19 +94,6 @@ export default function MyGroupsPage() {
       .toUpperCase()
       .slice(0, 2)
   }
-
-  const getGroupColor = (index: number) => {
-    const colors = [
-      "bg-[#60a5fa]", // blue
-      "bg-[#f59e0b]", // amber
-      "bg-[#10b981]", // emerald
-      "bg-[#8b5cf6]", // violet
-      "bg-[#ec4899]", // pink
-      "bg-[#14b8a6]", // teal
-    ]
-    return colors[index % colors.length]
-  }
-
 
   if (loading) {
     return (
@@ -135,10 +124,10 @@ export default function MyGroupsPage() {
             placeholder="Buscar grupos..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-lg border-input dark:border-slate-600 bg-background dark:bg-slate-800/50"
+            className="w-full"
           />
           <div className="flex items-center space-x-1 jsustify-center">
-            <Checkbox id="show-archived" className='border-emearald-300' checked={showArchived} onCheckedChange={(checked) => setShowArchived(Boolean(checked))} />
+            <Checkbox id="show-archived" checked={showArchived} onCheckedChange={(checked) => setShowArchived(Boolean(checked))} />
             <Label htmlFor="show-archived">Ver archivados</Label>
           </div>
             </div>
@@ -154,7 +143,7 @@ export default function MyGroupsPage() {
           </div>
         ) : (
           <div className="space-y-3">
-            {filteredGroups.map((group, index) => {
+            {filteredGroups.map((group) => {
               const balance = getBalanceDisplay(group.userBalance)
               return (
                 <button
@@ -167,9 +156,10 @@ export default function MyGroupsPage() {
                   <div className="flex items-center gap-4">
                     {/* Group Avatar */}
                     <div
-                      className={`w-14 h-14 rounded-full ${getGroupColor(index)} flex items-center justify-center flex-shrink-0 ${
+                      className={`w-14 h-14 rounded-full flex items-center justify-center flex-shrink-0 ${
                         group.archived ? "opacity-60" : ""
                       }`}
+                      style={{ backgroundColor: memberColor(group.name) }}
                     >
                       <span className="text-white font-semibold text-lg">{getGroupInitials(group.name)}</span>
                     </div>
@@ -181,7 +171,7 @@ export default function MyGroupsPage() {
                           {group.name}
                         </h3>
                         {group.archived && (
-                          <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-amber-100 text-amber-700 text-xs font-medium rounded-full dark:bg-amber-900 dark:text-amber-300">
+                          <span className="inline-flex items-center gap-1 rounded-full bg-warning-surface px-2 py-0.5 text-xs font-medium text-warning">
                             <Archive className="w-3 h-3" />
                             Archivado
                           </span>
@@ -189,7 +179,7 @@ export default function MyGroupsPage() {
                       </div>
                       <p className={`text-sm text-muted-foreground ${group.archived ? "text-muted-foreground/70" : ""}`}>
                         {group.memberCount} {group.memberCount === 1 ? "miembro" : "miembros"}, Total:{" "}
-                        {group.totalExpenses.toFixed(2)}€
+                        {formatMoney(group.totalExpenses)}
                       </p>
                     </div>
 
