@@ -20,7 +20,7 @@ export function JoinGroupForm({ onGroupJoined }: JoinGroupFormProps) {
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState("")
   const router = useRouter()
-  const { setIdentity } = useUserIdentity()
+  const { setIdentity } = useUserIdentity(null)
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
