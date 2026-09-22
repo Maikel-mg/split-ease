@@ -80,8 +80,6 @@ export async function getUserProfile(userId: string) {
     }
 
     if (!data) {
-      console.log("[v0] No profile found for user, fetching email to create one")
-
       // Get user's email from auth
       const {
         data: { user },

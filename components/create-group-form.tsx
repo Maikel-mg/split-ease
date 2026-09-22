@@ -52,14 +52,11 @@ export function CreateGroupForm({ onGroupCreated }: CreateGroupFormProps) {
 
       const allMembers = [creatorName.trim(), ...validMembers]
 
-      console.log("[v0] Creating group with:", { groupName, allMembers })
-
       const groupService = getGroupService()
       const group = await groupService.createGroup(groupName, allMembers, isPrivate)
 
       setIdentity(group.id, creatorName.trim())
 
-      console.log("[v0] Group created successfully:", group.id)
       onGroupCreated(group)
     } catch (err) {
       console.error("[v0] Error in create group form:", err)

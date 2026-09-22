@@ -63,16 +63,12 @@ export async function createGroupWithMembers(userId: string, groupName: string, 
       throw new Error("Error al crear el grupo")
     }
 
-    console.log("[v0] Group created:", group)
-
     // Insert members using service role (bypasses RLS)
     const membersToInsert = memberNames.map((name) => ({
       group_id: group.id,
       user_id: null,
       member_name: name,
     }))
-
-    console.log("[v0] Inserting members:", membersToInsert)
 
     const { error: membersError } = await supabase.from("group_members").insert(membersToInsert)
 
@@ -82,8 +78,6 @@ export async function createGroupWithMembers(userId: string, groupName: string, 
       await supabase.from("groups").delete().eq("id", group.id)
       throw new Error("Error al agregar miembros")
     }
-
-    console.log("[v0] Members inserted successfully")
 
     revalidatePath("/")
 
@@ -256,12 +250,8 @@ export async function copyGroup(sourceGroupId: string, newGroupName: string) {
     // Use the same user_id as the source group (or null if not set)
     const ownerUserId = sourceGroup.user_id || null
 
-    console.log("[v0] Copying group:", sourceGroup.name, "with members:", memberNames)
-
     // Create the new group with the same members using createGroupWithMembers
     const result = await createGroupWithMembers(ownerUserId, newGroupName, memberNames)
-
-    console.log("[v0] Group copied successfully:", result)
 
     return { success: true, newGroupId: result.groupId }
   } catch (error: any) {
