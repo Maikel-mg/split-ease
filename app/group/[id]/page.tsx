@@ -138,6 +138,10 @@ export default function GroupPage() {
 
   const canArchive = balances.every((b) => Math.abs(b.netBalance) < 0.01)
 
+  // An empty list satisfies `every`, but a group with no expenses is not a
+  // group that is even. Requiring real balances keeps the celebration honest.
+  const groupSettled = balances.length > 0 && canArchive
+
   const groupTour = useMemo(() => getGroupTour(!!group?.isPrivate), [group?.isPrivate])
 
   if (loading) {
@@ -292,6 +296,9 @@ export default function GroupPage() {
               <DebtSettlement
                 debts={filteredDebts}
                 groupId={groupId}
+                groupName={group.name}
+                groupSettled={groupSettled}
+                hasDebts={debts.length > 0}
                 payments={payments}
                 userMemberName={userMemberName}
                 onPaymentsRegistered={handlePaymentsRegistered}
