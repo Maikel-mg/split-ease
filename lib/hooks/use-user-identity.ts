@@ -78,7 +78,6 @@ export function addGroupId(groupId: string) {
     if (!groupIds.includes(groupId)) {
       groupIds.push(groupId)
       localStorage.setItem(GROUP_IDS_KEY, JSON.stringify(groupIds))
-      console.log("[v0] Added group ID to list:", groupId, "Total groups:", groupIds.length)
     }
   } catch (error) {
     console.error("[v0] Error adding group ID:", error)

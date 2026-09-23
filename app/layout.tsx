@@ -7,6 +7,7 @@ import "./globals.css"
 import { Suspense } from "react"
 import { ThemeProvider } from "@/components/theme-provider"
 import ThemeColorUpdater from "@/components/theme-color-updater"
+import { Toaster } from "@/components/ui/toaster"
 
 const gabarito = Gabarito({
   subsets: ["latin"],
@@ -56,6 +57,7 @@ export default function RootLayout({
         <ThemeProvider attribute="class" defaultTheme="system" enableSystem={true} storageKey="theme">
           <ThemeColorUpdater />
           <Suspense fallback={<div>Loading...</div>}>{children}</Suspense>
+          <Toaster />
         </ThemeProvider>
         <Analytics />
       </body>

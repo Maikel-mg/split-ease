@@ -15,10 +15,7 @@ export class SupabaseGroupRepository implements GroupRepository {
   }
 
   async createGroup(name: string, memberNames: string[], isPrivate: boolean): Promise<Group> {
-    console.log("[v0] Creating group:", { name, memberNames, isPrivate })
-
     const code = this.generateCode()
-    console.log("[v0] Generated code:", code)
 
     const { data: groupData, error: groupError } = await this.supabase
       .from("groups")
@@ -36,15 +33,11 @@ export class SupabaseGroupRepository implements GroupRepository {
       throw new Error(`Error al crear el grupo: ${groupError.message}`)
     }
 
-    console.log("[v0] Group created:", groupData)
-
     const membersToInsert = memberNames.map((memberName) => ({
       group_id: groupData.id,
       user_id: null,
       member_name: memberName,
     }))
-
-    console.log("[v0] Inserting members:", membersToInsert)
 
     const { error: membersError } = await this.supabase.from("group_members").insert(membersToInsert)
 
@@ -53,15 +46,11 @@ export class SupabaseGroupRepository implements GroupRepository {
       throw new Error(`Error al agregar miembros: ${membersError.message}`)
     }
 
-    console.log("[v0] Members inserted successfully")
-
     const { data: membersData } = await this.supabase
       .from("group_members")
       .select("*")
       .eq("group_id", groupData.id)
       .order("joined_at", { ascending: true })
-
-    console.log("[v0] Members data:", membersData)
 
     const members: Member[] =
       membersData?.map((m) => ({

@@ -51,8 +51,6 @@ export default function MyGroupsPage() {
       
       const myGroupIds = getMyGroupIds()
 
-      console.log("[v0] My group IDs:", myGroupIds)
-
       if (myGroupIds.length === 0) {
         setGroups([])
         setFilteredGroups([])

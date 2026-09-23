@@ -23,8 +23,8 @@ export default function HomePage({ displayName }: HomePageProps) {
     router.push(`/group/${group.id}`)
   }
 
-  const handleGroupJoined = (group: Group) => {
-    router.push(`/group/${group.id}`)
+  const handleGroupJoined = (groupId: string) => {
+    router.push(`/group/${groupId}`)
   }
 
   return (
