@@ -5,6 +5,25 @@ Todos los cambios notables en este proyecto se documentan en este archivo.
 El formato se basa en [Keep a Changelog](https://keepachangelog.com/es/1.1.0/),
 y este proyecto adherisce a [Semantic Versioning](https://semver.org/lang/es/).
 
+## [v2026_09_23] - 2026-09-23
+
+### Added
+
+- **Celebración del grupo saldado** — Cuando todas las cuentas del grupo quedan a cero, la pestaña "Saldar" muestra una tarjeta de "¡Misión cumplida!" con confeti y un botón para enviar el resultado al grupo por WhatsApp, con mensaje e imagen. Se celebra una vez por hito; si el grupo vuelve a tener deudas, se gana de nuevo.
+- **Tarjeta de liquidación** — Imagen cuadrada que resume el cierre del grupo, generada en el propio dispositivo y enviada por la hoja nativa de compartir, sin depender de un servidor.
+
+### Fixed
+
+- **Notificaciones invisibles** — El componente que dibuja los avisos no se renderizaba en ninguna parte, así que ningún aviso llegaba a verse. Ahora está montado a nivel global.
+- **Errores de tipos** — Corregidos los fallos de comprobación de tipos en la página de inicio, el formulario de unirse a un grupo y el botón, sin recurrir a `any` ni a supresiones.
+- **Errores de TypeScript silenciados en el build** — El build ya no ignora los errores de tipos, así que un fallo real rompe la compilación en lugar de pasar desapercibido.
+
+### Removed
+
+- **Repositorios locales de prueba** — Eliminados los tres repositorios `LocalStorage*`, que ya no cumplían sus puertos y no se usaban.
+- **Acción sin uso** — Eliminada `getUserGroups`, una acción de servidor sin llamadas y ya rota.
+- **Registros de depuración** — Eliminados los registros de consola con marca `[v0]` repartidos por la aplicación.
+
 ## [v2026_09_19] - 2026-09-19
 
 ### Changed
