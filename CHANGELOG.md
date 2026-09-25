@@ -5,6 +5,12 @@ Todos los cambios notables en este proyecto se documentan en este archivo.
 El formato se basa en [Keep a Changelog](https://keepachangelog.com/es/1.1.0/),
 y este proyecto adherisce a [Semantic Versioning](https://semver.org/lang/es/).
 
+## [v2026_09_25] - 2026-09-25
+
+### Added
+
+- **Compartir invitación al grupo** — El diálogo de invitar a un grupo incorpora un botón de compartir que abre el menú nativo del dispositivo (WhatsApp, Telegram, etc.) con el enlace de unión. Se mantienen las opciones de copiar el código y copiar el enlace; si el navegador no ofrece compartir, el mensaje se copia al portapapeles.
+
 ## [v2026_09_23] - 2026-09-23
 
 ### Added

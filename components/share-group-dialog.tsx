@@ -9,7 +9,9 @@ import {
   DialogDescription,
 } from "@/components/ui/dialog"
 import { Button } from "@/components/ui/button"
-import { Copy, Check } from "lucide-react"
+import { Copy, Check, Share2 } from "lucide-react"
+import { useToast } from "@/hooks/use-toast"
+import { shareGroupInvite } from "@/lib/share-group"
 
 interface ShareGroupDialogProps {
   groupName: string
@@ -19,11 +21,42 @@ interface ShareGroupDialogProps {
 }
 
 export function ShareGroupDialog({ groupName, groupCode, open, onOpenChange }: ShareGroupDialogProps) {
+  const { toast } = useToast()
   const [copiedCode, setCopiedCode] = useState(false)
   const [copiedUrl, setCopiedUrl] = useState(false)
+  const [sharing, setSharing] = useState(false)
 
   const joinUrl =
     typeof window !== "undefined" ? `${window.location.origin}/join/${groupCode}` : ""
+
+  const handleShareInvite = async () => {
+    setSharing(true)
+    try {
+      const outcome = await shareGroupInvite({ groupName, joinUrl })
+
+      if (outcome === "copied") {
+        toast({
+          title: "Invitación copiada",
+          description: "Pégalo donde quieras invitar al grupo.",
+        })
+      } else if (outcome === "unavailable") {
+        toast({
+          title: "No se pudo compartir",
+          description: "Tu navegador no ofrece compartir. Usa el enlace de abajo.",
+          variant: "destructive",
+        })
+      }
+    } catch (error) {
+      console.error("Error sharing group invite:", error)
+      toast({
+        title: "No se pudo compartir",
+        description: "Inténtalo de nuevo en unos segundos.",
+        variant: "destructive",
+      })
+    } finally {
+      setSharing(false)
+    }
+  }
 
   const handleCopyCode = async () => {
     await navigator.clipboard.writeText(groupCode)
@@ -46,6 +79,22 @@ export function ShareGroupDialog({ groupName, groupCode, open, onOpenChange }: S
         </DialogHeader>
 
         <div className="space-y-6 py-2">
+          <div className="space-y-2">
+            <Button className="h-11 w-full" onClick={handleShareInvite} disabled={sharing}>
+              <Share2 className="h-4 w-4" />
+              {sharing ? "Compartiendo..." : "Compartir invitación"}
+            </Button>
+            <p className="text-xs text-ink-2">
+              Abre el menú para elegir WhatsApp, Telegram o cualquier otra app.
+            </p>
+          </div>
+
+          <div className="flex items-center gap-3">
+            <span className="h-px flex-1 bg-rule" />
+            <span className="text-xs text-ink-2">o comparte el código</span>
+            <span className="h-px flex-1 bg-rule" />
+          </div>
+
           <div className="space-y-2">
             <p className="text-sm font-medium">Código del grupo</p>
             <div className="flex items-center gap-2">
