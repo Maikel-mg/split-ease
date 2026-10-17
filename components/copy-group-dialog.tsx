@@ -37,6 +37,7 @@ export function CopyGroupDialog({
   const { toast } = useToast()
   const { setIdentity } = useUserIdentity(null)
   const [newGroupName, setNewGroupName] = useState("")
+  const [query, setQuery] = useState("")
   const [selectedMember, setSelectedMember] = useState<string>("")
   const [customMemberName, setCustomMemberName] = useState("")
   const [isCustomMember, setIsCustomMember] = useState(false)
@@ -45,11 +46,16 @@ export function CopyGroupDialog({
   useEffect(() => {
     if (open) {
       setNewGroupName(`${sourceGroup.name} (copia)`)
+      setQuery("")
       setSelectedMember("")
       setCustomMemberName("")
       setIsCustomMember(false)
     }
   }, [open, sourceGroup.name])
+
+  const visibleMembers = sourceGroup.members.filter((member) =>
+    member.name.toLowerCase().includes(query.trim().toLowerCase()),
+  )
 
   const handleCopy = async () => {
     if (!newGroupName.trim()) {
@@ -110,7 +116,7 @@ export function CopyGroupDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[425px]">
+      <DialogContent className="max-h-[85vh] flex flex-col sm:max-w-[425px]">
         <DialogHeader>
           <DialogTitle>Copiar grupo</DialogTitle>
           <DialogDescription>
@@ -118,50 +124,61 @@ export function CopyGroupDialog({
           </DialogDescription>
         </DialogHeader>
 
-        <div className="grid gap-5 py-2">
-          <div className="space-y-2">
-            <Label htmlFor="groupName">Nombre del grupo nuevo</Label>
-            <Input
-              id="groupName"
-              value={newGroupName}
-              onChange={(e) => setNewGroupName(e.target.value)}
-              placeholder="Nombre del grupo"
-              maxLength={100}
-              className="h-11"
-            />
-          </div>
+        <div className="space-y-2">
+          <Label htmlFor="groupName">Nombre del grupo nuevo</Label>
+          <Input
+            id="groupName"
+            value={newGroupName}
+            onChange={(e) => setNewGroupName(e.target.value)}
+            placeholder="Nombre del grupo"
+            maxLength={100}
+            className="h-11"
+          />
+        </div>
 
-          <div className="space-y-2">
-            <Label>¿Qué miembro eres en el grupo nuevo?</Label>
-            <RadioGroup
-              value={isCustomMember ? "custom" : selectedMember}
-              onValueChange={(value) => {
-                if (value === "custom") {
-                  setIsCustomMember(true)
-                  setSelectedMember("")
-                } else {
-                  setIsCustomMember(false)
-                  setSelectedMember(value)
-                }
-              }}
-              className="divide-y divide-rule"
-            >
-              {sourceGroup.members.map((member) => (
-                <div key={member.id} className="flex items-center gap-3 py-3">
-                  <RadioGroupItem value={member.name} id={`member-${member.id}`} />
-                  <MemberDot name={member.name} />
-                  <Label htmlFor={`member-${member.id}`} className="flex-1 cursor-pointer font-normal">
-                    {member.name}
-                  </Label>
-                </div>
-              ))}
-              <div className="flex items-center gap-3 py-3">
-                <RadioGroupItem value="custom" id="member-custom" />
-                <Label htmlFor="member-custom" className="flex-1 cursor-pointer font-normal">
-                  Otro nombre
+        <div className="space-y-2">
+          <Label>¿Qué miembro eres en el grupo nuevo?</Label>
+          <Input
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            placeholder="Buscar integrante…"
+            aria-label="Buscar integrante"
+            className="h-11"
+          />
+        </div>
+
+        <div className="min-h-0 flex-1 overflow-y-auto">
+          <RadioGroup
+            value={isCustomMember ? "custom" : selectedMember}
+            onValueChange={(value) => {
+              if (value === "custom") {
+                setIsCustomMember(true)
+                setSelectedMember("")
+              } else {
+                setIsCustomMember(false)
+                setSelectedMember(value)
+              }
+            }}
+            className="divide-y divide-rule"
+          >
+            {visibleMembers.map((member) => (
+              <div key={member.id} className="flex items-center gap-3 py-3">
+                <RadioGroupItem value={member.name} id={`member-${member.id}`} />
+                <MemberDot name={member.name} />
+                <Label htmlFor={`member-${member.id}`} className="flex-1 cursor-pointer font-normal">
+                  {member.name}
                 </Label>
               </div>
-            </RadioGroup>
+            ))}
+            {visibleMembers.length === 0 && (
+              <p className="py-3 text-center text-sm text-ink-2">Sin resultados</p>
+            )}
+            <div className="flex items-center gap-3 py-3">
+              <RadioGroupItem value="custom" id="member-custom" />
+              <Label htmlFor="member-custom" className="flex-1 cursor-pointer font-normal">
+                Otro nombre
+              </Label>
+            </div>
             {isCustomMember && (
               <Input
                 value={customMemberName}
@@ -170,7 +187,7 @@ export function CopyGroupDialog({
                 className="mt-2 h-11"
               />
             )}
-          </div>
+          </RadioGroup>
         </div>
 
         <DialogFooter>
