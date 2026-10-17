@@ -20,6 +20,7 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog"
 import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
 import { MemberDot } from "@/components/member-dot"
 import { Trash2 } from "lucide-react"
 import type { Group } from "@/core/entities/Group"
@@ -38,6 +39,11 @@ interface ManageMembersDialogProps {
 export function ManageMembersDialog({ open, onOpenChange, group, balances, onMemberRemoved }: ManageMembersDialogProps) {
   const { toast } = useToast()
   const [isRemoving, setIsRemoving] = useState<string | null>(null)
+  const [query, setQuery] = useState("")
+
+  const visibleMembers = group.members.filter((member) =>
+    member.name.toLowerCase().includes(query.trim().toLowerCase()),
+  )
 
   const handleRemoveMember = async (memberId: string) => {
     setIsRemoving(memberId)
@@ -63,7 +69,7 @@ export function ManageMembersDialog({ open, onOpenChange, group, balances, onMem
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[425px]">
+      <DialogContent className="max-h-[85vh] flex flex-col sm:max-w-[425px]">
         <DialogHeader>
           <DialogTitle>Miembros del grupo</DialogTitle>
           <DialogDescription>
@@ -71,8 +77,15 @@ export function ManageMembersDialog({ open, onOpenChange, group, balances, onMem
           </DialogDescription>
         </DialogHeader>
 
-        <ul className="divide-y divide-rule">
-          {group.members.map((member) => {
+        <Input
+          value={query}
+          onChange={(e) => setQuery(e.target.value)}
+          placeholder="Buscar integrante…"
+          aria-label="Buscar integrante"
+        />
+
+        <ul className="min-h-0 flex-1 divide-y divide-rule overflow-y-auto">
+          {visibleMembers.map((member) => {
             const balance = balances.find((b) => b.memberId === member.id)
             const canBeRemoved = balance && Math.abs(balance.netBalance) < 0.01
 
@@ -116,6 +129,9 @@ export function ManageMembersDialog({ open, onOpenChange, group, balances, onMem
               </li>
             )
           })}
+          {visibleMembers.length === 0 && (
+            <li className="py-6 text-center text-sm text-ink-2">Sin resultados</li>
+          )}
         </ul>
       </DialogContent>
     </Dialog>
